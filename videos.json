@@ -4,7 +4,7 @@
     "title": "№ 724 Бешеный бобер / Мужик затопил самолет / Протесты против Оксимирона",
     "description": "Полный монтаж для выпуска новостей Лебедева",
     "url": "https://vk.com/video_ext.php?oid=-211437014&id=456247909&autoplay=1",
-    "thumbnail": "",
+    "thumbnail": "covers/vk1.jpg",
     "platform": "vk"
   },
   {
@@ -28,7 +28,7 @@
     "title": "№ 726 Киркоров опух от икры / Олимпиада на стероидах / Самый большой кокошник",
     "description": "Полный монтаж для выпуска новостей Лебедева",
     "url": "https://vk.com/video_ext.php?oid=-211437014&id=456247928&autoplay=1",
-    "thumbnail": "",
+    "thumbnail": "covers/vk2.jpg",
     "platform": "vk"
   },
     {
@@ -46,5 +46,13 @@
     "url": "https://youtube.com/embed/Yh3OhW46n3c?si=oUx6I_nxg6Pvy42b",
     "thumbnail": "",
     "platform": "youtube"
+  },
+  {
+    "id": 7,
+    "title": "№ 730 Тоннель между Чукоткой и Аляской / Моргенштерн стал евреем / Негры против китайцев",
+    "description": "Полный монтаж для выпуска новостей Лебедева",
+    "url": "https://vk.com/video_ext.php?oid=-211437014&id=456247999&autoplay=1",
+    "thumbnail": "covers/vk3.jpg",
+    "platform": "vk"
   }
 ]
