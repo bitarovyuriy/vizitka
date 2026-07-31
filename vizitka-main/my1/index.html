@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Юрий Битаров | Видеомонтажёр / Motion-дизайнер</title>
+
+  <!-- Google Fonts: Inter + Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Стили -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== ХЕДЕР ===== -->
+  <header class="header">
+    <div class="header__glow"></div>
+    <div class="container">
+      <div class="header__content">
+        <div id="headerCircles" class="header__circles" aria-hidden="false"></div>
+        <h1 class="header__title">Юрий Битаров</h1>
+        <p class="header__subtitle">Видеомонтажёр <span class="dot">•</span> Motion-дизайнер</p>
+        <div class="header__cta">
+          <a href="#portfolio" class="btn btn--primary"><i class="fa-solid fa-play"></i> Смотреть работы</a>
+          <a href="#contacts" class="btn btn--ghost"><i class="fa-solid fa-paper-plane"></i> Связаться</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== О СЕБЕ ===== -->
+  <section class="about" id="about">
+    <div class="container">
+      <h2 class="section__title">О себе</h2>
+      <div class="about__grid">
+        <div class="about__text">
+          <p>Привет! Я <strong>Юрий</strong> — видеомонтажёр и motion-дизайнер с опытом <strong>5+ лет</strong>. Работаю с разными жанрами: музыкальные клипы, рекламные ролики, документальные фильмы и свадебные истории.</p>
+          <p>Превращаю сырой материал в эмоциональные, динамичные и стильные видео, которые цепляют зрителя с первых секунд.</p>
+        </div>
+        <div class="about__tools">
+          <h3>Инструменты</h3>
+          <ul class="tools">
+            <li><i class="fa-solid fa-clapperboard"></i> Adobe Premiere Pro</li>
+            <li><i class="fa-solid fa-wand-magic-sparkles"></i> After Effects</li>
+            <li><i class="fa-solid fa-palette"></i> DaVinci Resolve</li>
+            <li><i class="fa-solid fa-volume-high"></i> Audition / Sound Design</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ПОРТФОЛИО (ЛЕНТА ВИДЕО) ===== -->
+  <section class="portfolio" id="portfolio">
+    <div class="container">
+      <div class="portfolio__head">
+        <h2 class="section__title">Портфолио</h2>
+        <!-- Кнопка обновления ленты -->
+        <button class="btn btn--refresh" id="refreshBtn">
+          <i class="fa-solid fa-rotate-right"></i> Обновить ленту
+        </button>
+      </div>
+
+      <!-- Лоадер ленты -->
+      <div class="grid-loader" id="gridLoader">
+        <div class="spinner"></div>
+        <p>Загрузка работ...</p>
+      </div>
+
+      <!-- Сетка видео — генерируется из videos.json -->
+      <div class="video-grid" id="videoGrid"></div>
+    </div>
+  </section>
+
+  <!-- ===== КОНТАКТЫ ===== -->
+  <section class="contacts" id="contacts">
+    <div class="container">
+      <h2 class="section__title">Контакты</h2>
+      <p class="contacts__sub">Открыт для новых проектов и коллабораций</p>
+      <div class="contacts__buttons">
+        <!-- Telegram и Email подставляются через JS (защита от спама) -->
+        <a href="#" class="contact-btn contact-btn--tg" id="tgBtn" rel="noopener noreferrer">
+          <i class="fa-brands fa-telegram"></i> <span>Telegram</span>
+        </a>
+        <a href="#" class="contact-btn contact-btn--mail" id="mailBtn">
+          <i class="fa-solid fa-envelope"></i> <span>Email</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ФУТЕР ===== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <!-- Копирайт разрешён к выделению (класс selectable) -->
+      <p class="footer__copy selectable">© <span id="year"></span> Юрий Битаров. Все права защищены.</p>
+      <div class="footer__socials">
+        <a href="https://t.me/" target="_blank" rel="noopener noreferrer" aria-label="Telegram"><i class="fa-brands fa-telegram"></i></a>
+        <a href="https://youtube.com/" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+        <a href="https://instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+        <a href="https://vimeo.com/" target="_blank" rel="noopener noreferrer" aria-label="Vimeo"><i class="fa-brands fa-vimeo-v"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===== МОДАЛЬНОЕ ОКНО ===== -->
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="modal__backdrop" id="modalBackdrop"></div>
+    <div class="modal__dialog" role="dialog" aria-modal="true">
+      <button class="modal__close" id="modalClose" aria-label="Закрыть"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal__video">
+        <!-- Лоадер видео внутри модалки -->
+        <div class="video-loader" id="videoLoader">
+          <div class="spinner"></div>
+        </div>
+        <!-- iframe вставляется через JS -->
+        <div class="modal__iframe-wrap" id="modalIframeWrap"></div>
+      </div>
+      <h3 class="modal__title" id="modalTitle"></h3>
+      <p class="modal__desc" id="modalDesc"></p>
+    </div>
+  </div>
+
+  <!-- Скрипт -->
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "title": "Музыкальный клип | Dream Avenue",
+    "description": "Динамичный монтаж, цветокоррекция, VFX эффекты",
+    "url": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "thumbnail": "",
+    "platform": "youtube"
+  },
+  {
+    "id": 2,
+    "title": "Документальный фильм | Городские истории",
+    "description": "Эмоциональный монтаж, работа со звуком, интершум",
+    "url": "https://player.vimeo.com/video/76979871",
+    "thumbnail": "",
+    "platform": "vimeo"
+  },
+  {
+    "id": 3,
+    "title": "Рекламный ролик | Бренд XYZ",
+    "description": "Motion дизайн, 2D анимация, синхронизация с музыкой",
+    "url": "https://www.youtube.com/embed/9bZkp7q19f0",
+    "thumbnail": "",
+    "platform": "youtube"
+  },
+  {
+    "id": 4,
+    "title": "Свадебный фильм | Love Story",
+    "description": "Лиричный монтаж, цветовая стилизация, slow motion",
+    "url": "https://www.youtube.com/embed/6dhqV3V5B3E",
+    "thumbnail": "",
+    "platform": "youtube"
+  }
+  ,{
+    "id": 5,
+    "title": "Свадебный фильм | Love Story",
+    "description": "Лиричный монтаж, цветовая стилизация, slow motion",
+    "url": "https://www.youtube.com/embed/6dhqV3V5B3E",
+    "thumbnail": "",
+    "platform": "youtube"
+  }
+    ,{
+    "id": 6,
+    "title": "Свадебный фильм | Love Story",
+    "description": "Лиричный монтаж, цветовая стилизация, slow motion",
+    "url": "https://www.youtube.com/embed/6dhqV3V5B3E",
+    "thumbnail": "",
+    "platform": "youtube"
+  }
+]
