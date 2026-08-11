@@ -24,6 +24,14 @@
     "platform": "youtube"
   },
   {
+    "id": 8,
+    "title": "Forbes «Бизнес в эпоху ИИ» №2",
+    "description": "Монтаж видео для Forbes",
+    "url": "https://www.youtube.com/embed/l9xmQR6LLMM?si=GIAaNpTfWMiIQndD",
+    "thumbnail": "covers/yt5.jpg",
+    "platform": "youtube"
+  },
+  {
     "id": 4,
     "title": "№ 726 Киркоров опух от икры / Олимпиада на стероидах / Самый большой кокошник",
     "description": "Полный монтаж для выпуска новостей Лебедева",
