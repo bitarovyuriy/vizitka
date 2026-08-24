@@ -4,7 +4,7 @@
     "title": "№ 734 НЛО в форме картошки / Корова остановила футбольный матч",
     "description": "Полный монтаж для выпуска новостей Лебедева",
     "url": "https://vkvideo.ru/video_ext.php?oid=-211437014&id=456248058&hash=a9b686555e229428&hd=4",
-    "thumbnail": "covers/vk1.jpg",
+    "thumbnail": "covers/vk1.avif",
     "platform": "vk"
   },
   {
@@ -12,7 +12,7 @@
     "title": "Эпоха ИИ-агентов: как промышленность меняет подход к цифровизации | Forbes «Бизнес в эпоху ИИ» №1",
     "description": "Монтаж видео для Forbes Россия, включая цветокоррекцию и графику",
     "url": "https://www.youtube.com/embed/WfDWgo5f4CQ?si=jrwc4L6qtaIWgKC3",
-    "thumbnail": "covers/yt4.jpg",
+    "thumbnail": "covers/yt4.avif",
     "platform": "youtube"
   },
   {
@@ -20,7 +20,7 @@
     "title": "Роберт Кийосаки: мира не будет, доллар падает, банки рушатся. Автор «Богатый папа, бедный папа»",
     "description": "Монтаж интервью на английском языке и синхронизация с дубляжем",
     "url": "https://www.youtube.com/embed/zPCLjpCpyQ8?si=J7Dtluq31J0jiibx",
-    "thumbnail": "covers/yt3.jpg",
+    "thumbnail": "covers/yt3.avif",
     "platform": "youtube"
   },
   {
@@ -28,7 +28,7 @@
     "title": "Forbes «Бизнес в эпоху ИИ» №2",
     "description": "Монтаж видео для Forbes",
     "url": "https://www.youtube.com/embed/l9xmQR6LLMM?si=GIAaNpTfWMiIQndD",
-    "thumbnail": "covers/yt5.jpg",
+    "thumbnail": "covers/yt5.avif",
     "platform": "youtube"
   },
   {
@@ -36,7 +36,7 @@
     "title": "№ 726 Киркоров опух от икры / Олимпиада на стероидах / Самый большой кокошник",
     "description": "Полный монтаж для выпуска новостей Лебедева",
     "url": "https://vk.com/video_ext.php?oid=-211437014&id=456247928&autoplay=1",
-    "thumbnail": "covers/vk2.jpg",
+    "thumbnail": "covers/vk2.avif",
     "platform": "vk"
   },
     {
@@ -44,7 +44,7 @@
     "title": "«Я прошел все круги ада»: Владимир Евтушенков на Forbes Club",
     "description": "Монтаж мероприятия",
     "url": "https://www.youtube.com/embed/ghVyQOimSM8?si=ZytAIwg2dPJoBu7D",
-    "thumbnail": "covers/yt2.jpg",
+    "thumbnail": "covers/yt2.avif",
     "platform": "youtube"
   },
   {
@@ -52,7 +52,7 @@
     "title": "Почему манипуляции в продажах — это норма?",
     "description": "Нарезка шортсов, рилсов, тиктоков и тд",
     "url": "https://youtube.com/embed/Yh3OhW46n3c?si=oUx6I_nxg6Pvy42b",
-    "thumbnail": "covers/yt1.png",
+    "thumbnail": "covers/yt1.avif",
     "platform": "youtube"
   },
   {
@@ -60,7 +60,7 @@
     "title": "№ 730 Тоннель между Чукоткой и Аляской / Моргенштерн стал евреем / Негры против китайцев",
     "description": "Полный монтаж для выпуска новостей Лебедева",
     "url": "https://vk.com/video_ext.php?oid=-211437014&id=456247999&autoplay=1",
-    "thumbnail": "covers/vk3.jpg",
+    "thumbnail": "covers/vk3.avif",
     "platform": "vk"
   }
 ]
