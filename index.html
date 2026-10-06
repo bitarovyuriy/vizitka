@@ -76,9 +76,15 @@
 
   <section class="section shorts" id="shorts" hidden>
     <div class="container">
-      <div class="section__head">
-        <h2 class="section__title">Вертикальные</h2>
-        <p class="section__note">Shorts, Reels и вертикальные нарезки</p>
+      <div class="section__head shorts__head">
+        <div>
+          <h2 class="section__title">Вертикальные</h2>
+          <p class="section__note">Shorts, Reels и вертикальные нарезки</p>
+        </div>
+        <div class="shorts__nav" id="shortsNav" hidden>
+          <button class="shorts__arrow" id="shortsPrev" type="button" aria-label="Предыдущие вертикальные" aria-controls="shortsScroller"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="shorts__arrow" id="shortsNext" type="button" aria-label="Следующие вертикальные" aria-controls="shortsScroller"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
       </div>
       <div class="shorts__scroller" id="shortsScroller" tabindex="0" aria-label="Вертикальные видео"></div>
     </div>

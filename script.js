@@ -36,6 +36,9 @@ const modalTitle = document.getElementById('modalTitle');
 const modalDesc = document.getElementById('modalDesc');
 const shortsSection = document.getElementById('shorts');
 const shortsScroller = document.getElementById('shortsScroller');
+const shortsNav = document.getElementById('shortsNav');
+const shortsPrev = document.getElementById('shortsPrev');
+const shortsNext = document.getElementById('shortsNext');
 const videoLoader = document.getElementById('videoLoader');
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -181,6 +184,44 @@ function renderShorts(list) {
 
   shortsScroller.appendChild(fragment);
   shortsSection.hidden = false;
+  updateShortsNav();
+}
+
+/* листание ленты вертикальных: шаг — карточка плюс зазор */
+function shortsStep() {
+  if (!shortsScroller) return 0;
+  const card = shortsScroller.querySelector('.shorts__card');
+  if (!card) return shortsScroller.clientWidth;
+  const gap = parseFloat(getComputedStyle(shortsScroller).columnGap) || 20;
+  return card.getBoundingClientRect().width + gap;
+}
+
+function scrollShorts(direction) {
+  if (!shortsScroller) return;
+  shortsScroller.scrollBy({ left: direction * shortsStep(), behavior: 'smooth' });
+}
+
+// стрелки прячем, если лента целиком помещается, и гасим на краях
+function updateShortsNav() {
+  if (!shortsScroller || !shortsNav) return;
+
+  const max = shortsScroller.scrollWidth - shortsScroller.clientWidth;
+  const scrollable = max > 4;
+
+  shortsNav.hidden = !scrollable;
+  if (!scrollable) return;
+
+  // лента сняплена, поэтому в начале браузер держит небольшой отступ (падинг скроллера)
+  const inset = parseFloat(getComputedStyle(shortsScroller).paddingLeft) || 0;
+
+  if (shortsPrev) shortsPrev.disabled = shortsScroller.scrollLeft <= inset + 2;
+  if (shortsNext) shortsNext.disabled = shortsScroller.scrollLeft >= max - 2;
+}
+
+function bindShortsNav() {
+  if (shortsPrev) shortsPrev.addEventListener('click', () => scrollShorts(-1));
+  if (shortsNext) shortsNext.addEventListener('click', () => scrollShorts(1));
+  if (shortsScroller) shortsScroller.addEventListener('scroll', updateShortsNav, { passive: true });
 }
 
 /* --- Витрина избранного --------------------------------------------------- */
@@ -482,11 +523,13 @@ window.addEventListener('resize', () => {
   resizeTimer = setTimeout(() => {
     const slides = showcaseStage ? showcaseStage.querySelectorAll('.slide') : [];
     if (slides.length) setSlide(currentIndex, false);
+    updateShortsNav();
   }, 150);
 });
 
 document.addEventListener('DOMContentLoaded', () => {
   setupContacts();
   setupYear();
+  bindShortsNav();
   loadVideos();
 });

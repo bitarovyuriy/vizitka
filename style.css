@@ -481,7 +481,41 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   color: var(--text-mute);
 }
 
-/* --- Вертикальные -------------------------------------------------------- */
+/* --- Вертикальные ---
+   Лента 9:16: на десктопе листается стрелками и ползунком, на тач-устройствах — свайпом. */
+.shorts__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.shorts__nav {
+  display: flex;
+  flex: none;
+  gap: 8px;
+  padding-bottom: 2px;
+}
+.shorts__nav[hidden] { display: none; }
+
+.shorts__arrow {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--card);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  transition: border-color .2s var(--ease), color .2s var(--ease), background-color .2s var(--ease), opacity .2s var(--ease);
+}
+.shorts__arrow:hover,
+.shorts__arrow:focus-visible { border-color: var(--accent); color: var(--accent); background: var(--card-hover); }
+.shorts__arrow[disabled] { opacity: 0.3; cursor: default; }
+.shorts__arrow[disabled]:hover { border-color: var(--line-strong); color: var(--text); background: var(--card); }
+
+/* карточки 9:16 в строку, листаются стрелками, колесом-свайпом и ползунком */
 .shorts__scroller {
   display: grid;
   grid-auto-flow: column;
@@ -742,6 +776,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 @media (max-width: 640px) {
   .shorts__scroller { grid-auto-columns: min(62vw, 260px); gap: 14px; padding-bottom: 16px; }
+  .shorts__nav { display: none; }   /* на мобильном листаем свайпом */
 }
 
 /* на тач-устройствах наведения нет — кнопку проигрывания показываем сразу */
