@@ -32,12 +32,14 @@
   --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-display: 'Poppins', var(--font);
 
+  /* шкала: 12 / 14 / 16 / 20 / 28 / 40 / 72 */
   --fs-xs: 12px;
   --fs-sm: 14px;
-  --fs-base: 17px;
+  --fs-base: 16px;
   --fs-md: 20px;
   --fs-lg: 28px;
   --fs-xl: 40px;
+  --fs-2xl: 72px;
 
   --shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
   --shadow-accent: 0 12px 34px rgba(255, 92, 26, 0.22);
@@ -99,14 +101,14 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   padding: 15px 26px;
   border-radius: var(--radius-pill);
   border: 1px solid transparent;
-  font-size: 15px;
+  font-size: var(--fs-base);
   font-weight: 600;
   white-space: nowrap;
   transition: background-color .25s var(--ease), border-color .25s var(--ease),
               color .25s var(--ease), box-shadow .25s var(--ease), transform .25s var(--ease);
 }
 
-.btn i { font-size: 14px; }
+.btn i { font-size: var(--fs-sm); }
 
 .btn--primary {
   background: var(--accent);
@@ -121,7 +123,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .btn--ghost:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
 
-.btn--wide { padding: 17px 30px; font-size: 15.5px; }
+.btn--wide { padding: 17px 30px; font-size: var(--fs-base); }
 
 /* --- Hero ----------------------------------------------------------------- */
 .hero {
@@ -153,14 +155,14 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 
 .hero__title {
-  font-size: clamp(38px, 5.4vw, 72px);
+  font-size: clamp(var(--fs-xl), 5.4vw, var(--fs-2xl));
   font-weight: 800;
   letter-spacing: -0.03em;
 }
 
 .hero__roles {
   margin-top: 14px;
-  font-size: 18px;
+  font-size: var(--fs-md);
   font-weight: 500;
   letter-spacing: 0.01em;
 }
@@ -241,7 +243,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   border-radius: 50%;
   background: rgba(10, 10, 11, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.22);
-  font-size: 19px;
+  font-size: var(--fs-md);
   color: #fff;
   backdrop-filter: blur(6px);
   transition: background-color .25s var(--ease), color .25s var(--ease), transform .25s var(--ease);
@@ -282,7 +284,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   border: 1px solid var(--line-strong);
   background: rgba(10, 10, 11, 0.72);
   color: var(--text);
-  font-size: 14px;
+  font-size: var(--fs-sm);
   backdrop-filter: blur(6px);
   transition: border-color .2s var(--ease), color .2s var(--ease), background-color .2s var(--ease);
   z-index: 2;
@@ -315,14 +317,14 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 
 .section__title {
-  font-size: clamp(26px, 3.2vw, var(--fs-xl));
+  font-size: clamp(var(--fs-lg), 3.2vw, var(--fs-xl));
   font-weight: 700;
 }
 
 .section__note {
   margin-top: 12px;
   max-width: 62ch;
-  font-size: 15.5px;
+  font-size: var(--fs-base);
   color: var(--text-dim);
 }
 
@@ -355,7 +357,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--card);
-  font-size: 15px;
+  font-size: var(--fs-base);
   transition: border-color .25s var(--ease), background-color .25s var(--ease), transform .25s var(--ease);
 }
 .tools li:hover { border-color: var(--accent-line); background: var(--card-hover); transform: translateY(-2px); }
@@ -369,7 +371,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   border-radius: var(--radius-sm);
   background: var(--accent-soft);
   color: var(--accent);
-  font-size: 14px;
+  font-size: var(--fs-sm);
 }
 
 /* --- Портфолио ------------------------------------------------------------ */
@@ -421,7 +423,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   border-radius: var(--radius-pill);
   background: rgba(10, 10, 11, 0.72);
   backdrop-filter: blur(6px);
-  font-size: 10.5px;
+  font-size: var(--fs-xs);
   font-weight: 600;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -441,7 +443,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   background: rgba(10, 10, 11, 0.58);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #fff;
-  font-size: 14px;
+  font-size: var(--fs-sm);
   opacity: 0;
   backdrop-filter: blur(6px);
   transition: opacity .25s var(--ease), transform .25s var(--ease), background-color .25s var(--ease), color .25s var(--ease);
@@ -459,7 +461,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 .video-card__title {
   font-family: var(--font);
-  font-size: 15px;
+  font-size: var(--fs-base);
   font-weight: 600;
   line-height: 1.4;
   display: -webkit-box;
@@ -469,7 +471,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 
 .video-card__desc {
-  font-size: 13.5px;
+  font-size: var(--fs-sm);
   line-height: 1.5;
   color: var(--text-dim);
   display: -webkit-box;
@@ -502,7 +504,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 .grid-message {
   margin-top: 28px;
-  font-size: 15px;
+  font-size: var(--fs-base);
   color: var(--text-dim);
 }
 .grid-message a { color: var(--accent); border-bottom: 1px solid var(--accent-line); }
@@ -517,7 +519,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 .contacts__direct {
   margin-top: 18px;
-  font-size: 15px;
+  font-size: var(--fs-base);
   color: var(--text-dim);
 }
 .contacts__direct a {
@@ -544,7 +546,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 .footer__copy,
 .footer__links a {
-  font-size: 13.5px;
+  font-size: var(--fs-sm);
   color: var(--text-mute);
 }
 
@@ -632,7 +634,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .modal__title {
   margin-top: 16px;
   font-family: var(--font);
-  font-size: 18px;
+  font-size: var(--fs-md);
   font-weight: 600;
   line-height: 1.35;
 }
@@ -656,32 +658,31 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   :root {
     --gutter: 18px;
     --section-pad: 64px;
-    --fs-base: 16px;
   }
 
   .hero { padding: 72px 0 56px; }
-  .hero__roles { font-size: 16px; }
+  .hero__roles { font-size: var(--fs-base); }
   .hero__cta { gap: 10px; }
   .hero__cta .btn { flex: 1 1 auto; }
 
   .showcase__arrow { display: none; }
-  .slide__play { width: 52px; height: 52px; font-size: 16px; }
-  .slide__caption { padding: 40px 14px 12px; font-size: 13px; }
+  .slide__play { width: 52px; height: 52px; font-size: var(--fs-base); }
+  .slide__caption { padding: 40px 14px 12px; font-size: var(--fs-sm); }
   .showcase__dots { gap: 10px; }
   .showcase__dot { width: 9px; height: 9px; }
   .showcase__dot.is-active { width: 26px; }
 
-  .section__note { font-size: 14.5px; }
+  .section__note { font-size: var(--fs-sm); }
 
   .video-grid { grid-template-columns: 1fr; gap: 10px; margin-top: 28px; }
 
   .video-card { flex-direction: row; align-items: stretch; }
   .video-card__thumb { width: 42%; flex: none; align-self: center; }
   .video-card__body { flex: 1; padding: 12px 14px; gap: 4px; justify-content: center; }
-  .video-card__title { font-size: 13.5px; line-height: 1.4; }
+  .video-card__title { font-size: var(--fs-sm); line-height: 1.4; }
   .video-card__desc { display: none; }
-  .video-card__badge { top: 7px; left: 7px; padding: 3px 8px; font-size: 9.5px; }
-  .video-card__play { width: 32px; height: 32px; font-size: 11px; opacity: 1; }
+  .video-card__badge { top: 7px; left: 7px; padding: 3px 8px; font-size: var(--fs-xs); }
+  .video-card__play { width: 32px; height: 32px; font-size: var(--fs-xs); opacity: 1; }
 
   .contacts__buttons { flex-direction: column; }
   .contacts__buttons .btn { width: 100%; }
