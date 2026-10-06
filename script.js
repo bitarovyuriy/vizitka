@@ -405,13 +405,12 @@ function normalizeEmbedUrl(video) {
     if (id) return 'https://www.youtube.com/embed/' + id;
   }
 
-  // vk.com/video-123_456, vkvideo.ru/video-123_456
-  const vkVideo = url.match(/(?:vk\.com|vkvideo\.ru)\/video(-?\d+)_(\d+)/);
-  if (vkVideo) return 'https://vk.com/video_ext.php?oid=' + vkVideo[1] + '&id=' + vkVideo[2];
-
-  // вертикальные клипы VK: vk.com/clip-123_456
-  const vkClip = url.match(/vk\.com\/clip(-?\d+)_(\d+)/);
-  if (vkClip) return 'https://vk.com/clip_ext.php?oid=' + vkClip[1] + '&id=' + vkClip[2];
+  // VK: vk.com/vk.ru/vkvideo.ru, видео (video-123_456) и клипы (clip-123_456)
+  const vk = url.match(/(?:vk\.com|vk\.ru|vkvideo\.ru)\/(clip|video)(-?\d+)_(\d+)/);
+  if (vk) {
+    const file = vk[1] === 'clip' ? 'clip_ext.php' : 'video_ext.php';
+    return 'https://vk.com/' + file + '?oid=' + vk[2] + '&id=' + vk[3];
+  }
 
   return url;
 }

@@ -70,5 +70,75 @@
     "url": "https://vk.com/video_ext.php?oid=-211437014&id=456247999&autoplay=1",
     "thumbnail": "covers/vk3.avif",
     "platform": "vk"
+  },
+  {
+    "id": 9,
+    "vertical": true,
+    "short": "Цифровые сервисы для регионального бизнеса",
+    "title": "Цифровые сервисы для регионального бизнеса. Насколько актуальны онлайн-офисы для работы?",
+    "description": "Shorts Forbes «Деловая Повестка»",
+    "url": "https://www.youtube.com/shorts/Ja5k_Sz1FPU",
+    "thumbnail": "covers/short1.avif",
+    "platform": "youtube"
+  },
+  {
+    "id": 10,
+    "vertical": true,
+    "short": "Почему манипуляции в продажах — это норма?",
+    "title": "Почему манипуляции в продажах — это норма?",
+    "description": "Shorts Forbes «Деловая Повестка»",
+    "url": "https://www.youtube.com/shorts/Yh3OhW46n3c",
+    "thumbnail": "covers/short2.avif",
+    "platform": "youtube"
+  },
+  {
+    "id": 11,
+    "vertical": true,
+    "short": "Каждый доллар не ко мне — идет в карман врагу",
+    "title": "Каждый доллар, который идет не ко мне, — идет в карман моему врагу",
+    "description": "Shorts Forbes «Деловая Повестка»",
+    "url": "https://www.youtube.com/shorts/BOCi4379OUQ",
+    "thumbnail": "covers/short3.avif",
+    "platform": "youtube"
+  },
+  {
+    "id": 12,
+    "vertical": true,
+    "short": "Почему «Яндекс» выпускает свое железо",
+    "title": "Почему «Яндекс» выпускает свое железо | Forbes",
+    "description": "Shorts Forbes «Деловая Повестка»",
+    "url": "https://youtube.com/shorts/3_novx9oIek?si=uUwk7LVm1Vww9pf8",
+    "thumbnail": "covers/short4.avif",
+    "platform": "youtube"
+  },
+  {
+    "id": 13,
+    "vertical": true,
+    "short": "Что такое компромисс?",
+    "title": "Что такое компромисс? | Forbes Russia",
+    "description": "Shorts Forbes «Деловая Повестка»",
+    "url": "https://youtube.com/shorts/kPsY_9CWjts?si=dsEjhgcON8Q0TLHx",
+    "thumbnail": "covers/short5.avif",
+    "platform": "youtube"
+  },
+  {
+    "id": 14,
+    "vertical": true,
+    "short": "В кортеже Путина появился пикап с пулеметом",
+    "title": "В кортеже Путина появился пикап с пулеметом",
+    "description": "Клип Артемия Лебедева",
+    "url": "https://vkvideo.ru/clip-211437014_456248532",
+    "thumbnail": "covers/short6.avif",
+    "platform": "vk"
+  },
+  {
+    "id": 15,
+    "vertical": true,
+    "short": "ИИ-ролики на «Разговорах о важном»",
+    "title": "ИИ-ролики на «Разговорах о важном»",
+    "description": "Клип Артемия Лебедева",
+    "url": "https://vk.ru/clip-211437014_456248633",
+    "thumbnail": "covers/short7.avif",
+    "platform": "vk"
   }
 ]
