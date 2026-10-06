@@ -54,15 +54,6 @@
     "platform": "youtube"
   },
   {
-    "id": 6,
-    "short": "Шортсы: манипуляции в продажах",
-    "title": "Почему манипуляции в продажах — это норма?",
-    "description": "Нарезка шортсов, рилсов, тиктоков и тд",
-    "url": "https://youtube.com/embed/Yh3OhW46n3c?si=oUx6I_nxg6Pvy42b",
-    "thumbnail": "covers/yt1.avif",
-    "platform": "youtube"
-  },
-  {
     "id": 7,
     "short": "Новости Лебедева № 730",
     "title": "№ 730 Тоннель между Чукоткой и Аляской / Моргенштерн стал евреем / Негры против китайцев",
@@ -79,6 +70,16 @@
     "description": "Shorts Forbes «Деловая Повестка»",
     "url": "https://www.youtube.com/shorts/Ja5k_Sz1FPU",
     "thumbnail": "covers/short1.avif",
+    "platform": "youtube"
+  },
+  {
+    "id": 10,
+    "vertical": true,
+    "short": "Почему манипуляции в продажах — это норма?",
+    "title": "Почему манипуляции в продажах — это норма?",
+    "description": "Shorts Forbes «Деловая Повестка»",
+    "url": "https://www.youtube.com/shorts/Yh3OhW46n3c",
+    "thumbnail": "covers/short2.avif",
     "platform": "youtube"
   },
   {
