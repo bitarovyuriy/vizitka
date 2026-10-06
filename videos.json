@@ -131,5 +131,14 @@
     "url": "https://vk.ru/clip-211437014_456248633",
     "thumbnail": "covers/short7.avif",
     "platform": "vk"
+  },
+  {
+    "id": 16,
+    "short": "Forbes: Что мешает бизнесу расти?",
+    "title": "Что мешает бизнесу расти?",
+    "description": "Монтаж для Forbes «Деловая Повестка»",
+    "url": "https://www.youtube.com/watch?v=xR4R7ie2Fw0",
+    "thumbnail": "covers/yt6.avif",
+    "platform": "youtube"
   }
 ]
