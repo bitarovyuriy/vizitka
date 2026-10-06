@@ -34,6 +34,8 @@ const modalClose = document.getElementById('modalClose');
 const modalIframeWrap = document.getElementById('modalIframeWrap');
 const modalTitle = document.getElementById('modalTitle');
 const modalDesc = document.getElementById('modalDesc');
+const shortsSection = document.getElementById('shorts');
+const shortsScroller = document.getElementById('shortsScroller');
 const videoLoader = document.getElementById('videoLoader');
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -55,13 +57,20 @@ async function loadVideos() {
     if (!Array.isArray(data) || data.length === 0) throw new Error('пустой список');
 
     videos = data;
-    renderGrid(videos);
-    buildShowcase(videos);
+
+    // вертикальные уходят в свою ленту, в сетке и витрине остаются горизонтальные
+    const vertical = videos.filter(isVertical);
+    const horizontal = videos.filter((video) => !isVertical(video));
+
+    renderGrid(horizontal);
+    buildShowcase(horizontal);
+    renderShorts(vertical);
     showMessage('');
   } catch (err) {
     console.warn('Не удалось загрузить videos.json:', err.message);
     videos = [];
     renderGrid(videos);
+    renderShorts([]);
     showMessage('Проекты не загрузились. Проверь файл <strong>videos.json</strong> — он должен лежать рядом с index.html и быть корректным JSON. Если открываешь страницу прямо с диска, нужен локальный сервер или GitHub Pages.');
   } finally {
     showLoader(false);
@@ -123,6 +132,55 @@ function renderGrid(list) {
   });
 
   videoGrid.appendChild(fragment);
+}
+
+function isVertical(video) {
+  return Boolean(video) && video.vertical === true;
+}
+
+/* --- Вертикальные ---------------------------------------------------------- */
+function renderShorts(list) {
+  if (!shortsSection || !shortsScroller) return;
+
+  shortsScroller.innerHTML = '';
+
+  // секции нет на странице, пока не добавлено ни одного вертикального видео
+  if (!list.length) {
+    shortsSection.hidden = true;
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+
+  list.forEach((video, index) => {
+    const title = video.short || video.title || 'Вертикальное видео';
+
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'shorts__card';
+    card.setAttribute('aria-label', 'Смотреть: ' + title);
+
+    card.innerHTML = `
+      <span class="shorts__media">
+        <span class="shorts__badge">${escapeHtml((video.platform || 'video').toUpperCase())}</span>
+        <img src="${escapeHtml(getThumbnail(video))}" alt="" loading="lazy" decoding="async" />
+        <span class="shorts__play"><i class="fa-solid fa-play"></i></span>
+      </span>
+      <span class="shorts__title">${escapeHtml(title)}</span>
+      ${video.description ? `<span class="shorts__meta">${escapeHtml(video.description)}</span>` : ''}
+    `;
+
+    const img = card.querySelector('img');
+    img.addEventListener('error', () => { img.style.visibility = 'hidden'; });
+
+    // вертикальные не участвуют в витрине первого экрана, индекс для модалки свой
+    card.addEventListener('click', () => openModal(video, index));
+
+    fragment.appendChild(card);
+  });
+
+  shortsScroller.appendChild(fragment);
+  shortsSection.hidden = false;
 }
 
 /* --- Витрина избранного --------------------------------------------------- */
@@ -245,6 +303,8 @@ function openModal(video, index) {
 
   if (modalTitle) modalTitle.textContent = video.title || video.short || '';
   if (modalDesc) modalDesc.textContent = video.description || '';
+  // вертикальное видео открываем в рамке 9:16, горизонтальное — 16:9
+  modal.classList.toggle('modal--vertical', isVertical(video));
   if (videoLoader) videoLoader.style.display = 'flex';
   if (modalIframeWrap) modalIframeWrap.innerHTML = '';
 
@@ -274,6 +334,7 @@ function closeModal() {
   if (!modal) return;
 
   modal.classList.remove('open');
+  modal.classList.remove('modal--vertical');
   modal.setAttribute('aria-hidden', 'true');
   if (modalIframeWrap) modalIframeWrap.innerHTML = '';
   clearTimeout(loaderFallback);
@@ -309,18 +370,54 @@ function getThumbnail(video) {
     if (id) return 'https://img.youtube.com/vi/' + id + '/hqdefault.jpg';
   }
 
+  // заглушка повторяет пропорции карточки: 9:16 для вертикальных
+  const vertical = video.vertical === true;
+  const width = vertical ? 360 : 640;
+  const height = vertical ? 640 : 360;
+
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="100%" height="100%" fill="#121214"/></svg>'
+    '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '"><rect width="100%" height="100%" fill="#121214"/></svg>'
   );
 }
 
 function extractYouTubeId(url) {
-  const match = String(url).match(/embed\/([a-zA-Z0-9_-]{11})/);
+  const value = String(url || '');
+
+  // youtube.com/embed/ID, /shorts/ID, /live/ID, youtu.be/ID, watch?v=ID
+  const match = value.match(/(?:embed|shorts|live)\/([a-zA-Z0-9_-]{11})/)
+    || value.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/)
+    || value.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+
   return match ? match[1] : null;
 }
 
+// Приводим обычную ссылку к виду, который понимает плеер: можно вставлять
+// в videos.json адрес страницы, а не готовый embed.
+function normalizeEmbedUrl(video) {
+  const url = String((video && video.url) || '').trim();
+  if (!url) return url;
+
+  // уже готовый embed — оставляем как есть
+  if (/video_ext\.php|clip_ext\.php|\/embed\//.test(url)) return url;
+
+  if (/youtube\.com|youtu\.be/.test(url)) {
+    const id = extractYouTubeId(url);
+    if (id) return 'https://www.youtube.com/embed/' + id;
+  }
+
+  // vk.com/video-123_456, vkvideo.ru/video-123_456
+  const vkVideo = url.match(/(?:vk\.com|vkvideo\.ru)\/video(-?\d+)_(\d+)/);
+  if (vkVideo) return 'https://vk.com/video_ext.php?oid=' + vkVideo[1] + '&id=' + vkVideo[2];
+
+  // вертикальные клипы VK: vk.com/clip-123_456
+  const vkClip = url.match(/vk\.com\/clip(-?\d+)_(\d+)/);
+  if (vkClip) return 'https://vk.com/clip_ext.php?oid=' + vkClip[1] + '&id=' + vkClip[2];
+
+  return url;
+}
+
 function buildEmbedUrl(video) {
-  let url = String(video.url || '');
+  let url = normalizeEmbedUrl(video);
 
   const setParam = (name, value) => {
     const pattern = new RegExp('([?&])' + name + '=[^&]*');

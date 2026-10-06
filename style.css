@@ -481,6 +481,119 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   color: var(--text-mute);
 }
 
+/* --- Вертикальные -------------------------------------------------------- */
+.shorts__scroller {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 268px;
+  gap: 20px;
+  margin-top: 36px;
+  padding: 4px 4px 20px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+.shorts__scroller:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.shorts__scroller::-webkit-scrollbar { height: 8px; }
+.shorts__scroller::-webkit-scrollbar-track { background: transparent; }
+.shorts__scroller::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: var(--radius-pill); }
+
+.shorts__card {
+  display: flex;
+  flex-direction: column;
+  scroll-snap-align: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.shorts__media {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  overflow: hidden;
+  transition: transform .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease);
+}
+.shorts__card:hover .shorts__media,
+.shorts__card:focus-visible .shorts__media {
+  transform: translateY(-3px);
+  border-color: var(--accent-line);
+  box-shadow: var(--shadow);
+}
+
+.shorts__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .45s var(--ease);
+}
+.shorts__card:hover .shorts__media img { transform: scale(1.04); }
+
+.shorts__badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(10, 10, 11, 0.72);
+  backdrop-filter: blur(6px);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.shorts__play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  transform: translate(-50%, -50%) scale(0.9);
+  border-radius: 50%;
+  background: rgba(10, 10, 11, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: var(--fs-base);
+  opacity: 0;
+  backdrop-filter: blur(6px);
+  transition: opacity .25s var(--ease), transform .25s var(--ease);
+}
+.shorts__card:hover .shorts__play,
+.shorts__card:focus-visible .shorts__play { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.shorts__play i { margin-left: 3px; }
+
+.shorts__title {
+  margin-top: 14px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.shorts__meta {
+  margin-top: 6px;
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
 /* --- Модалка -------------------------------------------------------------- */
 .modal {
   position: fixed;
@@ -544,6 +657,15 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 .modal__iframe-wrap { position: absolute; inset: 0; }
 .modal__iframe-wrap iframe { width: 100%; height: 100%; border: 0; }
+
+/* вертикальное видео: узкий диалог и рамка 9:16 вместо 16:9 */
+.modal--vertical .modal__dialog { width: min(460px, 100%); }
+.modal--vertical .modal__video {
+  width: auto;
+  height: min(calc(100vh - 220px), 720px);
+  aspect-ratio: 9 / 16;
+  margin: 0 auto;
+}
 
 .video-loader {
   position: absolute;
@@ -616,4 +738,13 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+
+@media (max-width: 640px) {
+  .shorts__scroller { grid-auto-columns: min(62vw, 260px); gap: 14px; padding-bottom: 16px; }
+}
+
+/* на тач-устройствах наведения нет — кнопку проигрывания показываем сразу */
+@media (hover: none), (max-width: 640px) {
+  .video-card__play, .shorts__play { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
