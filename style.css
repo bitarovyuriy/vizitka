@@ -1,6 +1,6 @@
 /* ==========================================================================
    Юрий Битаров — визитка. Один файл, порядок: токены → база → утилиты →
-   hero → секции → карточки → контакты/футер → модалка → адаптив.
+   hero → проекты → контакты/футер → модалка → адаптив.
    ========================================================================== */
 
 /* --- Токены --------------------------------------------------------------- */
@@ -14,9 +14,8 @@
   --text-dim: #8f8f96;
   --text-mute: #5f5f66;
 
-  --accent: #ff5c1a;
-  --accent-soft: rgba(255, 92, 26, 0.12);
-  --accent-line: rgba(255, 92, 26, 0.38);
+  --accent: #f2f2f3;
+  --accent-line: rgba(255, 255, 255, 0.3);
 
   --line: #1e1e22;
   --line-strong: #2b2b30;
@@ -42,7 +41,7 @@
   --fs-2xl: 72px;
 
   --shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
-  --shadow-accent: 0 12px 34px rgba(255, 92, 26, 0.22);
+  --shadow-accent: 0 10px 30px rgba(0, 0, 0, 0.5);
   --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 
@@ -115,7 +114,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   color: #0a0a0b;
   box-shadow: var(--shadow-accent);
 }
-.btn--primary:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(255, 92, 26, 0.3); }
+.btn--primary:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55); }
 
 .btn--ghost {
   border-color: var(--line-strong);
@@ -142,7 +141,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   width: min(900px, 100vw);
   height: 620px;
   transform: translateX(-50%);
-  background: radial-gradient(ellipse at center, rgba(255, 92, 26, 0.09), transparent 68%);
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.045), transparent 68%);
   pointer-events: none;
 }
 
@@ -168,14 +167,6 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 
 .dot { color: var(--accent); }
-
-.hero__lead {
-  margin-top: 22px;
-  max-width: 46ch;
-  font-size: var(--fs-base);
-  line-height: 1.65;
-  color: var(--text-dim);
-}
 
 .hero__facts {
   display: flex;
@@ -326,52 +317,6 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   max-width: 62ch;
   font-size: var(--fs-base);
   color: var(--text-dim);
-}
-
-/* --- О себе --------------------------------------------------------------- */
-.about__grid {
-  display: grid;
-  grid-template-columns: 1.3fr 1fr;
-  gap: 48px;
-  margin-top: 36px;
-}
-
-.about__text p {
-  font-size: var(--fs-base);
-  line-height: 1.7;
-  color: var(--text-dim);
-}
-.about__text p + p { margin-top: 18px; }
-.about__text strong { color: var(--text); font-weight: 600; }
-
-.tools {
-  display: grid;
-  gap: 10px;
-}
-
-.tools li {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px 18px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--card);
-  font-size: var(--fs-base);
-  transition: border-color .25s var(--ease), background-color .25s var(--ease), transform .25s var(--ease);
-}
-.tools li:hover { border-color: var(--accent-line); background: var(--card-hover); transform: translateY(-2px); }
-
-.tools i {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  flex: none;
-  border-radius: var(--radius-sm);
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: var(--fs-sm);
 }
 
 /* --- Портфолио ------------------------------------------------------------ */
@@ -629,7 +574,6 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .hero { min-height: 0; padding: 88px 0 64px; }
   .hero__inner { grid-template-columns: 1fr; gap: 40px; }
   .hero__media { order: 2; }
-  .about__grid { grid-template-columns: 1fr; gap: 32px; }
   .video-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Юрий Битаров — визитка. Скрипт: загрузка работ, витрина избранного,
+   Юрий Битаров — визитка. Скрипт: загрузка проектов, витрина избранного,
    лента портфолио, модалка с плеером, контакты, год в футере.
    ========================================================================== */
 
@@ -44,7 +44,7 @@ let autoplayTimer = null;
 let lastFocused = null;
 let loaderFallback = null;
 
-/* --- Работы --------------------------------------------------------------- */
+/* --- Проекты --------------------------------------------------------------- */
 async function loadVideos() {
   showLoader(true);
   try {
@@ -62,7 +62,7 @@ async function loadVideos() {
     console.warn('Не удалось загрузить videos.json:', err.message);
     videos = [];
     renderGrid(videos);
-    showMessage('Работы не загрузились. Проверь файл <strong>videos.json</strong> — он должен лежать рядом с index.html и быть корректным JSON. Если открываешь страницу прямо с диска, нужен локальный сервер или GitHub Pages.');
+    showMessage('Проекты не загрузились. Проверь файл <strong>videos.json</strong> — он должен лежать рядом с index.html и быть корректным JSON. Если открываешь страницу прямо с диска, нужен локальный сервер или GitHub Pages.');
   } finally {
     showLoader(false);
   }
@@ -88,7 +88,7 @@ function renderGrid(list) {
   const fragment = document.createDocumentFragment();
 
   list.forEach((video, index) => {
-    const title = video.short || video.title || 'Работа';
+    const title = video.short || video.title || 'Проект';
 
     const card = document.createElement('article');
     card.className = 'video-card';
@@ -156,7 +156,7 @@ function buildShowcase(list) {
       const dot = document.createElement('button');
       dot.type = 'button';
       dot.className = 'showcase__dot';
-      dot.setAttribute('aria-label', 'Работа ' + (index + 1));
+      dot.setAttribute('aria-label', 'Проект ' + (index + 1));
       dot.addEventListener('click', () => setSlide(index, true));
       dotsFragment.appendChild(dot);
     }
