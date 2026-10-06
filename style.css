@@ -517,19 +517,6 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   margin-top: 32px;
 }
 
-.contacts__direct {
-  margin-top: 18px;
-  font-size: var(--fs-base);
-  color: var(--text-dim);
-}
-.contacts__direct a {
-  color: var(--text);
-  border-bottom: 1px solid var(--line-strong);
-  transition: color .2s var(--ease), border-color .2s var(--ease);
-}
-.contacts__direct a:hover { color: var(--accent); border-color: var(--accent-line); }
-.contacts__sep { margin: 0 8px; color: var(--text-mute); }
-
 /* --- Футер ---------------------------------------------------------------- */
 .footer {
   border-top: 1px solid var(--line);

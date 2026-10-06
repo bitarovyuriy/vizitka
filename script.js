@@ -3,10 +3,17 @@
    лента портфолио, модалка с плеером, контакты, год в футере.
    ========================================================================== */
 
-const CONTACTS = {
-  telegram: 'https://t.me/betaraw',
-  email: 'bz.jura@gmail.com'
-};
+/* Адреса собираются в рантайме: в разметке нет ни готовых ссылок, ни адресов —
+   скриптовая сборка отсекает простые парсеры, которые выдирают mailto и t.me из HTML */
+const CONTACTS = (() => {
+  const telegramUser = ['bet', 'araw'].join('');
+  const mailUser = ['bz', 'jura'].join('.');
+  const mailHost = ['gmail', 'com'].join('.');
+  return {
+    telegram: 'https://t.me/' + telegramUser,
+    email: mailUser + '@' + mailHost
+  };
+})();
 
 const AUTOPLAY_DELAY = 5000;
 const SWIPE_THRESHOLD = 40;
@@ -353,11 +360,19 @@ function escapeHtml(value) {
 
 /* --- Мелочи --------------------------------------------------------------- */
 function setupContacts() {
-  const tgBtn = document.getElementById('tgBtn');
-  const mailBtn = document.getElementById('mailBtn');
+  const links = [
+    ['#tgBtn', CONTACTS.telegram, true],
+    ['#mailBtn', 'mailto:' + CONTACTS.email, false],
+    ['[data-contact="telegram"]', CONTACTS.telegram, true],
+    ['[data-contact="email"]', 'mailto:' + CONTACTS.email, false]
+  ];
 
-  if (tgBtn) tgBtn.href = CONTACTS.telegram;
-  if (mailBtn) mailBtn.href = 'mailto:' + CONTACTS.email;
+  links.forEach(([selector, href, external]) => {
+    document.querySelectorAll(selector).forEach((el) => {
+      el.setAttribute('href', href);
+      if (external) el.setAttribute('target', '_blank');
+    });
+  });
 }
 
 function setupYear() {
