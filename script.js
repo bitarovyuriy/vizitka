@@ -1,388 +1,349 @@
+/* ==========================================================================
+   Юрий Битаров — визитка. Скрипт: загрузка работ, витрина избранного,
+   лента портфолио, модалка с плеером, контакты, год в футере.
+   ========================================================================== */
 
+const CONTACTS = {
+  telegram: 'https://t.me/betaraw',
+  email: 'bz.jura@gmail.com'
+};
 
+const AUTOPLAY_DELAY = 5000;
+const SWIPE_THRESHOLD = 40;
 
-const DEFAULT_VIDEOS = [
-  {
-    id: 1,
-    title: "Музыкальный клип | Dream Avenue",
-    description: "Динамичный монтаж, цветокоррекция, VFX эффекты",
-    url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    thumbnail: "",
-    platform: "youtube"
-  },
-  {
-    id: 2,
-    title: "Рекламный ролик | Бренд XYZ",
-    description: "Motion дизайн, 2D анимация, синхронизация с музыкой",
-    url: "https://www.youtube.com/embed/9bZkp7q19f0",
-    thumbnail: "",
-    platform: "youtube"
-  },
-  {
-    id: 3,
-    title: "Документальный фильм | Городские истории",
-    description: "Эмоциональный монтаж, работа со звуком, интершум",
-    url: "https://player.vimeo.com/video/76979871",
-    thumbnail: "",
-    platform: "vimeo"
-  }
-];
+const showcaseStage = document.getElementById('showcaseStage');
+const showcaseDots = document.getElementById('showcaseDots');
+const showcasePrev = document.getElementById('showcasePrev');
+const showcaseNext = document.getElementById('showcaseNext');
+const showcaseEl = document.getElementById('showcase');
 
-const VK_PLACEHOLDER = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360">' +
-  '<rect width="100%" height="100%" fill="#0077FF"/>' +
-  '<text x="50%" y="50%" font-family="Arial, sans-serif" font-size="120" ' +
-  'font-weight="bold" fill="#ffffff" text-anchor="middle" dominant-baseline="central">VK</text>' +
-  '</svg>'
-);
+const videoGrid = document.getElementById('videoGrid');
+const gridLoader = document.getElementById('gridLoader');
+const gridMessage = document.getElementById('gridMessage');
 
-const videoGrid     = document.getElementById('videoGrid');
-const carouselTrack = document.getElementById('carouselTrack');
-const prevBtn       = document.getElementById('prevBtn');
-const nextBtn       = document.getElementById('nextBtn');
-const gridLoader    = document.getElementById('gridLoader');
-const refreshBtn    = document.getElementById('refreshBtn');
-const modal         = document.getElementById('modal');
+const modal = document.getElementById('modal');
 const modalBackdrop = document.getElementById('modalBackdrop');
-const modalClose    = document.getElementById('modalClose');
+const modalClose = document.getElementById('modalClose');
 const modalIframeWrap = document.getElementById('modalIframeWrap');
-const modalTitle    = document.getElementById('modalTitle');
-const modalDesc     = document.getElementById('modalDesc');
-const videoLoader   = document.getElementById('videoLoader');
-const carouselEl    = document.querySelector('.carousel');
+const modalTitle = document.getElementById('modalTitle');
+const modalDesc = document.getElementById('modalDesc');
+const videoLoader = document.getElementById('videoLoader');
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 let videos = [];
 let currentIndex = 0;
-let autoplayInterval = null;
-const AUTOPLAY_DELAY = 2000; 
+let autoplayTimer = null;
+let lastFocused = null;
+let loaderFallback = null;
 
-
+/* --- Работы --------------------------------------------------------------- */
 async function loadVideos() {
-  showGridLoader(true);
-  videoGrid.innerHTML = '';
-
+  showLoader(true);
   try {
-    
     const response = await fetch('videos.json?_=' + Date.now());
-    if (!response.ok) throw new Error('Файл не найден');
+    if (!response.ok) throw new Error('HTTP ' + response.status);
 
     const data = await response.json();
-    if (!Array.isArray(data) || data.length === 0) throw new Error('Пустой список');
+    if (!Array.isArray(data) || data.length === 0) throw new Error('пустой список');
 
     videos = data;
+    renderGrid(videos);
+    buildShowcase(videos);
+    showMessage('');
   } catch (err) {
-    
-    console.warn('Не удалось загрузить videos.json:', err.message, '— показываю дефолтные примеры.');
-    videos = DEFAULT_VIDEOS;
+    console.warn('Не удалось загрузить videos.json:', err.message);
+    videos = [];
+    renderGrid(videos);
+    showMessage('Работы не загрузились. Проверь файл <strong>videos.json</strong> — он должен лежать рядом с index.html и быть корректным JSON. Если открываешь страницу прямо с диска, нужен локальный сервер или GitHub Pages.');
   } finally {
-    currentIndex = 0;
-    renderVideos(videos);
-    buildCarousel();
-    updateCarousel();
-    
-    setTimeout(updateCarousel, 100);
-    setTimeout(updateCarousel, 300);
-    setTimeout(updateCarousel, 700);
-    startAutoplay();
-    showGridLoader(false);
+    showLoader(false);
   }
 }
 
+function showLoader(show) {
+  if (gridLoader) gridLoader.style.display = show ? 'flex' : 'none';
+}
 
-function renderVideos(videos) {
+function showMessage(html) {
+  if (!gridMessage) return;
+  gridMessage.innerHTML = html || '';
+  gridMessage.hidden = !html;
+}
+
+/* --- Лента портфолио ------------------------------------------------------ */
+function renderGrid(list) {
+  if (!videoGrid) return;
   videoGrid.innerHTML = '';
 
-  if (!videos.length) {
-    videoGrid.innerHTML = '<p class="grid-message">Работы пока не добавлены.</p>';
-    return;
-  }
+  if (!list.length) return;
 
-  videos.forEach((video, index) => {
+  const fragment = document.createDocumentFragment();
+
+  list.forEach((video, index) => {
+    const title = video.short || video.title || 'Работа';
+
     const card = document.createElement('article');
     card.className = 'video-card';
-
-    
-    const thumb = getThumbnail(video);
-    
-    const badge = video.platform ? video.platform.toUpperCase() : 'VIDEO';
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', 'Смотреть: ' + title);
 
     card.innerHTML = `
       <div class="video-card__thumb">
-        <span class="video-card__badge">${badge}</span>
-        <img src="${thumb}" alt="${escapeHtml(video.title)}" loading="lazy"
-             onerror="this.style.display='none'">
-        <div class="video-card__play"><i class="fa-solid fa-play"></i></div>
+        <span class="video-card__badge">${escapeHtml((video.platform || 'video').toUpperCase())}</span>
+        <img src="${escapeHtml(getThumbnail(video))}" alt="" loading="${index < 4 ? 'eager' : 'lazy'}" decoding="async" />
+        <span class="video-card__play"><i class="fa-solid fa-play"></i></span>
       </div>
       <div class="video-card__body">
-        <h3 class="video-card__title">${escapeHtml(video.title)}</h3>
-        <p class="video-card__desc">${escapeHtml(video.description)}</p>
-        <button class="video-card__btn"><i class="fa-solid fa-play"></i> Смотреть</button>
+        <h3 class="video-card__title">${escapeHtml(title)}</h3>
+        <p class="video-card__desc">${escapeHtml(video.description || '')}</p>
       </div>
     `;
 
-   
-    card.addEventListener('click', () => openModal(video));
-
-    videoGrid.appendChild(card);
-
-    
-    setTimeout(() => card.classList.add('show'), index * 100);
-  });
-}
-
-
-function buildCarousel() {
-  if (!carouselTrack) return;
-  carouselTrack.innerHTML = '';
-
-  videos.forEach((video, idx) => {
-    const card = document.createElement('div');
-    card.className = 'carousel-card';
-    card.dataset.index = idx;
-    card.innerHTML = `
-      <img src="${getThumbnail(video)}" alt="${escapeHtml(video.title)}" loading="lazy" onerror="this.style.display='none'">
-      <div class="card-title">${escapeHtml(video.title)}</div>
-    `;
-
-    
     const img = card.querySelector('img');
-    if (img) {
-      img.addEventListener('load', updateCarousel);
-      img.addEventListener('error', updateCarousel);
-    }
+    img.addEventListener('error', () => { img.style.visibility = 'hidden'; });
 
-    card.addEventListener('click', () => {
-      if (idx === currentIndex) {
-        openModal(video);
-      } else {
-        currentIndex = idx;
-        updateCarousel();
-        startAutoplay();
+    card.addEventListener('click', () => openModal(video, index));
+    card.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openModal(video, index);
       }
     });
 
-    carouselTrack.appendChild(card);
-  });
-}
-
-function updateCarousel() {
-  if (!carouselTrack || !carouselEl) return;
-
-  const cards = carouselTrack.querySelectorAll('.carousel-card');
-  if (!cards.length) return;
-
-  cards.forEach((card, idx) => {
-    card.classList.toggle('active', idx === currentIndex);
+    fragment.appendChild(card);
   });
 
-  const activeCard = cards[currentIndex];
-  if (!activeCard) return;
-
-  const wrapper = carouselTrack.parentElement;
-
-  if (activeCard.offsetWidth === 0 || wrapper.offsetWidth === 0) {
-    requestAnimationFrame(updateCarousel);
-    return;
-  }
-
-  const wrapperCenter = wrapper.clientWidth / 2;
-  const cardCenter = activeCard.offsetLeft + activeCard.offsetWidth / 2;
-  const offset = wrapperCenter - cardCenter;
-
-  carouselTrack.style.transform = `translateX(${offset}px)`;
+  videoGrid.appendChild(fragment);
 }
+
+/* --- Витрина избранного --------------------------------------------------- */
+function buildShowcase(list) {
+  if (!showcaseStage || !list.length) return;
+
+  showcaseStage.innerHTML = '';
+  if (showcaseDots) showcaseDots.innerHTML = '';
+
+  const stageFragment = document.createDocumentFragment();
+  const dotsFragment = document.createDocumentFragment();
+
+  list.forEach((video, index) => {
+    const slide = document.createElement('button');
+    slide.type = 'button';
+    slide.className = 'slide';
+    slide.dataset.index = index;
+    slide.setAttribute('aria-label', 'Смотреть: ' + (video.short || video.title || ''));
+    slide.innerHTML = `
+      <img class="slide__img" src="${escapeHtml(getThumbnail(video))}" alt="" loading="${index === 0 ? 'eager' : 'lazy'}" decoding="async" />
+      <span class="slide__play"><i class="fa-solid fa-play"></i></span>
+      <span class="slide__caption">${escapeHtml(video.short || video.title || '')}</span>
+    `;
+    slide.addEventListener('click', () => {
+      if (index === currentIndex) openModal(video, index);
+      else setSlide(index, true);
+    });
+    stageFragment.appendChild(slide);
+
+    if (showcaseDots) {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'showcase__dot';
+      dot.setAttribute('aria-label', 'Работа ' + (index + 1));
+      dot.addEventListener('click', () => setSlide(index, true));
+      dotsFragment.appendChild(dot);
+    }
+  });
+
+  showcaseStage.appendChild(stageFragment);
+  if (showcaseDots) showcaseDots.appendChild(dotsFragment);
+
+  currentIndex = 0;
+  setSlide(0, false);
+  startAutoplay();
+}
+
+function setSlide(index, restartTimer) {
+  const slides = showcaseStage ? showcaseStage.querySelectorAll('.slide') : [];
+  const dots = showcaseDots ? showcaseDots.querySelectorAll('.showcase__dot') : [];
+  if (!slides.length) return;
+
+  currentIndex = (index + slides.length) % slides.length;
+
+  slides.forEach((slide, i) => slide.classList.toggle('is-active', i === currentIndex));
+  dots.forEach((dot, i) => dot.classList.toggle('is-active', i === currentIndex));
+
+  if (restartTimer) startAutoplay();
+}
+
 function nextSlide() {
-  if (videos.length === 0) return;
-  currentIndex = (currentIndex + 1) % videos.length;
-  updateCarousel();
+  if (!videos.length) return;
+  setSlide(currentIndex + 1, true);
 }
 
 function prevSlide() {
-  if (videos.length === 0) return;
-  currentIndex = (currentIndex - 1 + videos.length) % videos.length;
-  updateCarousel();
+  if (!videos.length) return;
+  setSlide(currentIndex - 1, true);
 }
-
-if (nextBtn) nextBtn.addEventListener('click', () => { nextSlide(); startAutoplay(); });
-if (prevBtn) prevBtn.addEventListener('click', () => { prevSlide(); startAutoplay(); });
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowRight') { nextSlide(); startAutoplay(); }
-  if (e.key === 'ArrowLeft')  { prevSlide(); startAutoplay(); }
-});
-
-
-let resizeTimer;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(updateCarousel, 150);
-});
-
-
-let touchStartX = 0;
-let touchEndX = 0;
-
-if (carouselEl) {
-  carouselEl.addEventListener('touchstart', (e) => {
-    touchStartX = e.changedTouches[0].screenX;
-    stopAutoplay();
-  }, { passive: true });
-
-  carouselEl.addEventListener('touchend', (e) => {
-    touchEndX = e.changedTouches[0].screenX;
-    const diff = touchStartX - touchEndX;
-    if (Math.abs(diff) > 40) {     // порог свайпа
-      if (diff > 0) nextSlide();
-      else prevSlide();
-    }
-    setTimeout(startAutoplay, 3000);
-  }, { passive: true });
-}
-
 
 function startAutoplay() {
   stopAutoplay();
-  autoplayInterval = setInterval(() => {
-    nextSlide();
-  }, AUTOPLAY_DELAY);
+  if (reduceMotion || videos.length < 2 || modal.classList.contains('open')) return;
+  autoplayTimer = setInterval(() => setSlide(currentIndex + 1, false), AUTOPLAY_DELAY);
 }
 
 function stopAutoplay() {
-  if (autoplayInterval) {
-    clearInterval(autoplayInterval);
-    autoplayInterval = null;
+  if (autoplayTimer) {
+    clearInterval(autoplayTimer);
+    autoplayTimer = null;
   }
 }
 
-if (carouselEl) {
-  carouselEl.addEventListener('mouseenter', stopAutoplay);
-  carouselEl.addEventListener('mouseleave', startAutoplay);
+if (showcaseNext) showcaseNext.addEventListener('click', nextSlide);
+if (showcasePrev) showcasePrev.addEventListener('click', prevSlide);
+
+if (showcaseEl) {
+  showcaseEl.addEventListener('mouseenter', stopAutoplay);
+  showcaseEl.addEventListener('mouseleave', startAutoplay);
+  showcaseEl.addEventListener('focusin', stopAutoplay);
+  showcaseEl.addEventListener('focusout', startAutoplay);
+
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  showcaseEl.addEventListener('touchstart', (event) => {
+    touchStartX = event.changedTouches[0].screenX;
+    touchStartY = event.changedTouches[0].screenY;
+    stopAutoplay();
+  }, { passive: true });
+
+  showcaseEl.addEventListener('touchend', (event) => {
+    const dx = touchStartX - event.changedTouches[0].screenX;
+    const dy = Math.abs(touchStartY - event.changedTouches[0].screenY);
+    if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > dy) {
+      if (dx > 0) nextSlide();
+      else prevSlide();
+    }
+    startAutoplay();
+  }, { passive: true });
 }
 
+/* --- Модалка -------------------------------------------------------------- */
+function openModal(video, index) {
+  if (!modal) return;
+
+  stopAutoplay();
+  lastFocused = document.activeElement;
+  if (typeof index === 'number') currentIndex = index;
+
+  if (modalTitle) modalTitle.textContent = video.title || video.short || '';
+  if (modalDesc) modalDesc.textContent = video.description || '';
+  if (videoLoader) videoLoader.style.display = 'flex';
+  if (modalIframeWrap) modalIframeWrap.innerHTML = '';
+
+  const iframe = document.createElement('iframe');
+  iframe.src = buildEmbedUrl(video);
+  iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
+  iframe.setAttribute('allowfullscreen', '');
+  iframe.setAttribute('title', video.title || 'Видео');
+  iframe.addEventListener('load', () => { if (videoLoader) videoLoader.style.display = 'none'; });
+
+  if (modalIframeWrap) modalIframeWrap.appendChild(iframe);
+
+  // если плеер не отдал load (чужой домен, блокировка) — снимаем спиннер по таймауту
+  clearTimeout(loaderFallback);
+  loaderFallback = setTimeout(() => {
+    if (videoLoader) videoLoader.style.display = 'none';
+  }, 6000);
+
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+
+  if (modalClose) modalClose.focus();
+}
+
+function closeModal() {
+  if (!modal) return;
+
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+  if (modalIframeWrap) modalIframeWrap.innerHTML = '';
+  clearTimeout(loaderFallback);
+  document.body.style.overflow = '';
+
+  if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+  lastFocused = null;
+  startAutoplay();
+}
+
+if (modalClose) modalClose.addEventListener('click', closeModal);
+if (modalBackdrop) modalBackdrop.addEventListener('click', closeModal);
+
+document.addEventListener('keydown', (event) => {
+  const isOpen = modal && modal.classList.contains('open');
+
+  if (event.key === 'Escape' && isOpen) {
+    closeModal();
+    return;
+  }
+  if (isOpen) return;
+
+  if (event.key === 'ArrowRight') nextSlide();
+  if (event.key === 'ArrowLeft') prevSlide();
+});
+
+/* --- Медиа ---------------------------------------------------------------- */
 function getThumbnail(video) {
-  
-  if (video.thumbnail && video.thumbnail.trim() !== '') {
-    return video.thumbnail.trim();
-  }
+  if (video.thumbnail && video.thumbnail.trim() !== '') return video.thumbnail.trim();
 
-  
-  if (video.platform === 'vk') {
-    return VK_PLACEHOLDER;
-  }
-
-  
   if (video.platform === 'youtube') {
     const id = extractYouTubeId(video.url);
-    if (id) return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+    if (id) return 'https://img.youtube.com/vi/' + id + '/hqdefault.jpg';
   }
 
-  
-  return 'data:image/svg+xml;charset=utf-8,' +
-    encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360">' +
-      '<rect width="100%" height="100%" fill="#111"/>' +
-      '</svg>'
-    );
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="100%" height="100%" fill="#121214"/></svg>'
+  );
 }
 
-
 function extractYouTubeId(url) {
-  const match = url.match(/embed\/([a-zA-Z0-9_-]{11})/);
+  const match = String(url).match(/embed\/([a-zA-Z0-9_-]{11})/);
   return match ? match[1] : null;
 }
 
-
-function openModal(video) {
-  stopAutoplay();
-
-  
-  modalTitle.textContent = video.title;
-  modalDesc.textContent = video.description;
-
-  
-  videoLoader.style.display = 'flex';
-  modalIframeWrap.innerHTML = '';
-
-  
-  const src = buildEmbedUrl(video);
-
-  
-  const iframe = document.createElement('iframe');
-  iframe.src = src;
-  iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
-  iframe.setAttribute('allowfullscreen', '');
-  iframe.frameBorder = '0';
-
-  
-  if (video.platform !== 'vk' && video.platform !== 'youtube') {
-    iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-popups allow-forms allow-presentation');
-  }
-
-  
-  iframe.addEventListener('load', () => { videoLoader.style.display = 'none'; });
-
-  modalIframeWrap.appendChild(iframe);
-
-
-  
-  modal.classList.add('open');
-  modal.setAttribute('aria-hidden', 'false');
-  document.body.style.overflow = 'hidden'; // блокируем прокрутку фона
-}
-
-
 function buildEmbedUrl(video) {
-  let url = video.url;
-  
-  const sep = url.includes('?') ? '&' : '?';
+  let url = String(video.url || '');
+
+  const setParam = (name, value) => {
+    const pattern = new RegExp('([?&])' + name + '=[^&]*');
+    if (pattern.test(url)) url = url.replace(pattern, '$1' + name + '=' + value);
+    else url += (url.includes('?') ? '&' : '?') + name + '=' + value;
+  };
+
+  const addParam = (name, value) => {
+    if (!new RegExp('[?&]' + name + '=').test(url)) setParam(name, value);
+  };
 
   if (video.platform === 'youtube') {
-    
-    url += sep + 'rel=0&modestbranding=1&controls=1&showinfo=0&autoplay=0';
+    addParam('rel', '0');
+    addParam('modestbranding', '1');
+    addParam('controls', '1');
   } else if (video.platform === 'vimeo') {
-    
-    url += sep + 'dnt=1&title=0&byline=0&portrait=0&autoplay=0';
+    addParam('dnt', '1');
+    addParam('title', '0');
+    addParam('byline', '0');
+    addParam('portrait', '0');
   } else if (video.platform === 'vk') {
-    
-    url += sep + 'hd=2&autoplay=0';
+    setParam('autoplay', '1');
   }
 
   return url;
 }
 
-
-function closeModal() {
-  modal.classList.remove('open');
-  modal.setAttribute('aria-hidden', 'true');
-  modalIframeWrap.innerHTML = ''; 
-  document.body.style.overflow = ''; 
-  startAutoplay();
-}
-
-
-modalClose.addEventListener('click', closeModal);
-modalBackdrop.addEventListener('click', closeModal);
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
-});
-
-
-refreshBtn.addEventListener('click', () => {
-  refreshBtn.classList.add('loading');
-  loadVideos().finally(() => {
-    setTimeout(() => refreshBtn.classList.remove('loading'), 500);
-  });
-});
-
-
-function showGridLoader(show) {
-  gridLoader.style.display = show ? 'flex' : 'none';
-}
-
-
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str)
+function escapeHtml(value) {
+  if (value === undefined || value === null) return '';
+  return String(value)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -390,25 +351,31 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
-
+/* --- Мелочи --------------------------------------------------------------- */
 function setupContacts() {
-  
-  const tgUser = 'betaraw';            
-  const mailUser = 'bz.jura';          
-  const mailDomain = 'gmail.com';          
-
   const tgBtn = document.getElementById('tgBtn');
   const mailBtn = document.getElementById('mailBtn');
 
-  
-  tgBtn.href = 'https://t.me/' + tgUser;
-  mailBtn.href = 'mailto:' + mailUser + '@' + mailDomain;
+  if (tgBtn) tgBtn.href = CONTACTS.telegram;
+  if (mailBtn) mailBtn.href = 'mailto:' + CONTACTS.email;
 }
 
+function setupYear() {
+  const year = document.getElementById('year');
+  if (year) year.textContent = String(new Date().getFullYear());
+}
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    const slides = showcaseStage ? showcaseStage.querySelectorAll('.slide') : [];
+    if (slides.length) setSlide(currentIndex, false);
+  }, 150);
+});
 
 document.addEventListener('DOMContentLoaded', () => {
-  loadVideos();        
-  setupContacts();     
-  // Год в футере
-  document.getElementById('year').textContent = new Date().getFullYear();
+  setupContacts();
+  setupYear();
+  loadVideos();
 });

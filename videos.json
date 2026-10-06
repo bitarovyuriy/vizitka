@@ -1,6 +1,7 @@
 [
   {
     "id": 1,
+    "short": "Новости Лебедева № 734",
     "title": "№ 734 НЛО в форме картошки / Корова остановила футбольный матч",
     "description": "Полный монтаж для выпуска новостей Лебедева",
     "url": "https://vkvideo.ru/video_ext.php?oid=-211437014&id=456248058&hash=a9b686555e229428&hd=4",
@@ -9,6 +10,7 @@
   },
   {
     "id": 2,
+    "short": "Forbes: Бизнес в эпоху ИИ № 1",
     "title": "Эпоха ИИ-агентов: как промышленность меняет подход к цифровизации | Forbes «Бизнес в эпоху ИИ» №1",
     "description": "Монтаж видео для Forbes Россия, включая цветокоррекцию и графику",
     "url": "https://www.youtube.com/embed/WfDWgo5f4CQ?si=jrwc4L6qtaIWgKC3",
@@ -17,6 +19,7 @@
   },
   {
     "id": 3,
+    "short": "Forbes: интервью с Робертом Кийосаки",
     "title": "Роберт Кийосаки: мира не будет, доллар падает, банки рушатся. Автор «Богатый папа, бедный папа»",
     "description": "Монтаж интервью на английском языке и синхронизация с дубляжем",
     "url": "https://www.youtube.com/embed/zPCLjpCpyQ8?si=J7Dtluq31J0jiibx",
@@ -25,6 +28,7 @@
   },
   {
     "id": 8,
+    "short": "Forbes: Бизнес в эпоху ИИ № 2",
     "title": "Forbes «Бизнес в эпоху ИИ» №2",
     "description": "Монтаж видео для Forbes",
     "url": "https://www.youtube.com/embed/l9xmQR6LLMM?si=GIAaNpTfWMiIQndD",
@@ -33,14 +37,16 @@
   },
   {
     "id": 4,
+    "short": "Новости Лебедева № 726",
     "title": "№ 726 Киркоров опух от икры / Олимпиада на стероидах / Самый большой кокошник",
     "description": "Полный монтаж для выпуска новостей Лебедева",
     "url": "https://vk.com/video_ext.php?oid=-211437014&id=456247928&autoplay=1",
     "thumbnail": "covers/vk2.avif",
     "platform": "vk"
   },
-    {
+  {
     "id": 5,
+    "short": "Forbes Club: Владимир Евтушенков",
     "title": "«Я прошел все круги ада»: Владимир Евтушенков на Forbes Club",
     "description": "Монтаж мероприятия",
     "url": "https://www.youtube.com/embed/ghVyQOimSM8?si=ZytAIwg2dPJoBu7D",
@@ -49,6 +55,7 @@
   },
   {
     "id": 6,
+    "short": "Шортсы: манипуляции в продажах",
     "title": "Почему манипуляции в продажах — это норма?",
     "description": "Нарезка шортсов, рилсов, тиктоков и тд",
     "url": "https://youtube.com/embed/Yh3OhW46n3c?si=oUx6I_nxg6Pvy42b",
@@ -57,6 +64,7 @@
   },
   {
     "id": 7,
+    "short": "Новости Лебедева № 730",
     "title": "№ 730 Тоннель между Чукоткой и Аляской / Моргенштерн стал евреем / Негры против китайцев",
     "description": "Полный монтаж для выпуска новостей Лебедева",
     "url": "https://vk.com/video_ext.php?oid=-211437014&id=456247999&autoplay=1",
