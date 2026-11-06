@@ -15,7 +15,8 @@ const CONTACTS = (() => {
   };
 })();
 
-const AUTOPLAY_DELAY = 5000;
+const AUTOPLAY_DELAY = 6000;
+const SLIDE_DURATION = 560;
 const SWIPE_THRESHOLD = 40;
 
 const showcaseStage = document.getElementById('showcaseStage');
@@ -23,6 +24,10 @@ const showcaseDots = document.getElementById('showcaseDots');
 const showcasePrev = document.getElementById('showcasePrev');
 const showcaseNext = document.getElementById('showcaseNext');
 const showcaseEl = document.getElementById('showcase');
+const showcaseControls = document.getElementById('showcaseControls');
+const showcaseCounter = document.getElementById('showcaseCounter');
+const showcaseToggle = document.getElementById('showcaseToggle');
+const showcaseStatus = document.getElementById('showcaseStatus');
 
 const videoGrid = document.getElementById('videoGrid');
 const gridLoader = document.getElementById('gridLoader');
@@ -41,11 +46,18 @@ const shortsPrev = document.getElementById('shortsPrev');
 const shortsNext = document.getElementById('shortsNext');
 const videoLoader = document.getElementById('videoLoader');
 
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+let reduceMotion = motionPreference.matches;
 
 let videos = [];
-let currentIndex = 0;
+let currentIndex = -1;
 let autoplayTimer = null;
+let autoplayPaused = false;
+let showcaseHovered = false;
+let showcaseTouched = false;
+let suppressSlideClickUntil = 0;
+let slideAnimations = [];
+let queuedSlide = null;
 let lastFocused = null;
 let loaderFallback = null;
 
@@ -73,6 +85,7 @@ async function loadVideos() {
     console.warn('Не удалось загрузить videos.json:', err.message);
     videos = [];
     renderGrid(videos);
+    buildShowcase([]);
     renderShorts([]);
     showMessage('Проекты не загрузились. Проверь файл <strong>videos.json</strong> — он должен лежать рядом с index.html и быть корректным JSON. Если открываешь страницу прямо с диска, нужен локальный сервер или GitHub Pages.');
   } finally {
@@ -90,51 +103,86 @@ function showMessage(html) {
   gridMessage.hidden = !html;
 }
 
-/* --- Лента портфолио ------------------------------------------------------ */
+/* --- Подписи и площадки --------------------------------------------------- */
+function getProjectCaption(video) {
+  return {
+    title: video.short || video.title || 'Проект',
+    client: String(video.client || '').trim(),
+    role: String(video.role || '').trim() || String(video.description || '').trim()
+  };
+}
+
+function platformIcon(video) {
+  const platforms = {
+    youtube: ['fa-youtube', 'YouTube'],
+    vk: ['fa-vk', 'VK'],
+    vimeo: ['fa-vimeo', 'Vimeo']
+  };
+  const platform = platforms[video.platform];
+  if (!platform) return '';
+  return `<span class="platform-icon" role="img" aria-label="${platform[1]}"><i class="fa-brands ${platform[0]}" aria-hidden="true"></i></span>`;
+}
+
+/* --- Избранные работы и остальные проекты -------------------------------- */
 function renderGrid(list) {
   if (!videoGrid) return;
   videoGrid.innerHTML = '';
 
   if (!list.length) return;
 
-  const fragment = document.createDocumentFragment();
+  // Явный выбор имеет приоритет; без отметок выделяем первые две работы.
+  const marked = list.filter((video) => video.featured === true).slice(0, 2);
+  const featured = marked.length ? marked : list.slice(0, 2);
+  const featuredSet = new Set(featured);
+  const groups = [featured, list.filter((video) => !featuredSet.has(video))];
 
-  list.forEach((video, index) => {
-    const title = video.short || video.title || 'Проект';
+  groups.forEach((group, groupIndex) => {
+    if (!group.length) return;
+    const container = document.createElement('div');
+    container.className = groupIndex === 0 ? 'video-grid__featured' : 'video-grid__rest';
 
-    const card = document.createElement('article');
-    card.className = 'video-card';
-    card.tabIndex = 0;
-    card.setAttribute('role', 'button');
-    card.setAttribute('aria-label', 'Смотреть: ' + title);
-
-    card.innerHTML = `
-      <div class="video-card__thumb">
-        <span class="video-card__badge">${escapeHtml((video.platform || 'video').toUpperCase())}</span>
-        <img src="${escapeHtml(getThumbnail(video))}" alt="" loading="${index < 4 ? 'eager' : 'lazy'}" decoding="async" />
-        <span class="video-card__play"><i class="fa-solid fa-play"></i></span>
-      </div>
-      <div class="video-card__body">
-        <h3 class="video-card__title">${escapeHtml(title)}</h3>
-        <p class="video-card__desc">${escapeHtml(video.description || '')}</p>
-      </div>
-    `;
-
-    const img = card.querySelector('img');
-    img.addEventListener('error', () => { img.style.visibility = 'hidden'; });
-
-    card.addEventListener('click', () => openModal(video, index));
-    card.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        openModal(video, index);
-      }
+    group.forEach((video) => {
+      container.appendChild(createVideoCard(video, groupIndex === 0));
     });
+    videoGrid.appendChild(container);
+  });
+}
 
-    fragment.appendChild(card);
+function createVideoCard(video, featured) {
+  const { title, client, role } = getProjectCaption(video);
+  const card = document.createElement('article');
+  card.className = 'video-card' + (featured ? ' video-card--featured' : '');
+  card.tabIndex = 0;
+  card.setAttribute('role', 'button');
+  card.setAttribute('aria-label', 'Смотреть: ' + title);
+  card.setAttribute('aria-haspopup', 'dialog');
+  card.setAttribute('aria-controls', 'modal');
+
+  card.innerHTML = `
+    <div class="video-card__thumb">
+      ${platformIcon(video)}
+      <img src="${escapeHtml(getThumbnail(video))}" alt="" loading="${featured ? 'eager' : 'lazy'}" decoding="async" />
+      <span class="video-card__play" aria-hidden="true"><i class="fa-solid fa-play"></i></span>
+    </div>
+    <div class="video-card__body">
+      <h3 class="video-card__title">${escapeHtml(title)}</h3>
+      ${client ? `<p class="video-card__client">${escapeHtml(client)}</p>` : ''}
+      ${role ? `<p class="video-card__role">${escapeHtml(role)}</p>` : ''}
+    </div>
+  `;
+
+  const img = card.querySelector('img');
+  img.addEventListener('error', () => { img.style.visibility = 'hidden'; });
+
+  card.addEventListener('click', () => openModal(video));
+  card.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openModal(video);
+    }
   });
 
-  videoGrid.appendChild(fragment);
+  return card;
 }
 
 function isVertical(video) {
@@ -155,29 +203,32 @@ function renderShorts(list) {
 
   const fragment = document.createDocumentFragment();
 
-  list.forEach((video, index) => {
-    const title = video.short || video.title || 'Вертикальное видео';
+  list.forEach((video) => {
+    const { title, client, role } = getProjectCaption(video);
 
     const card = document.createElement('button');
     card.type = 'button';
     card.className = 'shorts__card';
     card.setAttribute('aria-label', 'Смотреть: ' + title);
+    card.setAttribute('aria-haspopup', 'dialog');
+    card.setAttribute('aria-controls', 'modal');
 
     card.innerHTML = `
       <span class="shorts__media">
-        <span class="shorts__badge">${escapeHtml((video.platform || 'video').toUpperCase())}</span>
+        ${platformIcon(video)}
         <img src="${escapeHtml(getThumbnail(video))}" alt="" loading="lazy" decoding="async" />
-        <span class="shorts__play"><i class="fa-solid fa-play"></i></span>
+        <span class="shorts__play" aria-hidden="true"><i class="fa-solid fa-play"></i></span>
       </span>
       <span class="shorts__title">${escapeHtml(title)}</span>
-      ${video.description ? `<span class="shorts__meta">${escapeHtml(video.description)}</span>` : ''}
+      ${client ? `<span class="shorts__client">${escapeHtml(client)}</span>` : ''}
+      ${role ? `<span class="shorts__meta">${escapeHtml(role)}</span>` : ''}
     `;
 
     const img = card.querySelector('img');
     img.addEventListener('error', () => { img.style.visibility = 'hidden'; });
 
-    // вертикальные не участвуют в витрине первого экрана, индекс для модалки свой
-    card.addEventListener('click', () => openModal(video, index));
+    // Открытие вертикального видео не меняет выбранный слайд карусели.
+    card.addEventListener('click', () => openModal(video));
 
     fragment.appendChild(card);
   });
@@ -198,7 +249,7 @@ function shortsStep() {
 
 function scrollShorts(direction) {
   if (!shortsScroller) return;
-  shortsScroller.scrollBy({ left: direction * shortsStep(), behavior: 'smooth' });
+  shortsScroller.scrollBy({ left: direction * shortsStep(), behavior: reduceMotion ? 'instant' : 'smooth' });
 }
 
 // стрелки прячем, если лента целиком помещается, и гасим на краях
@@ -226,36 +277,58 @@ function bindShortsNav() {
 
 /* --- Витрина избранного --------------------------------------------------- */
 function buildShowcase(list) {
-  if (!showcaseStage || !list.length) return;
+  if (!showcaseStage || !showcaseEl) return;
 
+  stopAutoplay();
+  cancelSlideTransition();
   showcaseStage.innerHTML = '';
   if (showcaseDots) showcaseDots.innerHTML = '';
+  if (showcaseStatus) showcaseStatus.textContent = '';
+  showcaseEl.hidden = !list.length;
+  currentIndex = -1;
+  if (!list.length) return;
+  if (showcaseControls) showcaseControls.hidden = list.length < 2;
+  if (showcaseToggle) showcaseToggle.hidden = reduceMotion;
 
   const stageFragment = document.createDocumentFragment();
   const dotsFragment = document.createDocumentFragment();
 
   list.forEach((video, index) => {
+    const { title, client, role } = getProjectCaption(video);
     const slide = document.createElement('button');
     slide.type = 'button';
     slide.className = 'slide';
     slide.dataset.index = index;
-    slide.setAttribute('aria-label', 'Смотреть: ' + (video.short || video.title || ''));
+    slide.setAttribute('aria-label', 'Смотреть: ' + title);
+    slide.setAttribute('aria-haspopup', 'dialog');
+    slide.setAttribute('aria-controls', 'modal');
+    slide.tabIndex = -1;
+    slide.inert = true;
+    slide.setAttribute('aria-hidden', 'true');
     slide.innerHTML = `
-      <img class="slide__img" src="${escapeHtml(getThumbnail(video))}" alt="" loading="${index === 0 ? 'eager' : 'lazy'}" decoding="async" />
-      <span class="slide__play"><i class="fa-solid fa-play"></i></span>
-      <span class="slide__caption">${escapeHtml(video.short || video.title || '')}</span>
+      <img class="slide__img" src="${escapeHtml(getThumbnail(video))}" alt="" loading="${index < 2 ? 'eager' : 'lazy'}" decoding="async" ${index === 0 ? 'fetchpriority="high"' : ''} />
+      ${platformIcon(video)}
+      <span class="slide__play" aria-hidden="true"><i class="fa-solid fa-play"></i></span>
+      <span class="slide__caption">
+        <span class="slide__title">${escapeHtml(title)}</span>
+        ${client ? `<span class="slide__client">${escapeHtml(client)}</span>` : ''}
+        ${role ? `<span class="slide__role">${escapeHtml(role)}</span>` : ''}
+      </span>
     `;
     slide.addEventListener('click', () => {
-      if (index === currentIndex) openModal(video, index);
-      else setSlide(index, true);
+      if (Date.now() < suppressSlideClickUntil) return;
+      if (index === currentIndex) openModal(video);
     });
+    const img = slide.querySelector('img');
+    img.addEventListener('error', () => { img.style.visibility = 'hidden'; });
     stageFragment.appendChild(slide);
 
     if (showcaseDots) {
       const dot = document.createElement('button');
       dot.type = 'button';
       dot.className = 'showcase__dot';
-      dot.setAttribute('aria-label', 'Проект ' + (index + 1));
+      dot.setAttribute('aria-label', 'Проект ' + (index + 1) + ': ' + title);
+      dot.setAttribute('aria-controls', 'showcaseStage');
       dot.addEventListener('click', () => setSlide(index, true));
       dotsFragment.appendChild(dot);
     }
@@ -264,86 +337,167 @@ function buildShowcase(list) {
   showcaseStage.appendChild(stageFragment);
   if (showcaseDots) showcaseDots.appendChild(dotsFragment);
 
-  currentIndex = 0;
   setSlide(0, false);
   startAutoplay();
 }
 
-function setSlide(index, restartTimer) {
+function cancelSlideTransition() {
+  slideAnimations.forEach((animation) => animation.cancel());
+  slideAnimations = [];
+  queuedSlide = null;
+}
+
+function setSlide(index, restartTimer, direction = 0) {
   const slides = showcaseStage ? showcaseStage.querySelectorAll('.slide') : [];
   const dots = showcaseDots ? showcaseDots.querySelectorAll('.showcase__dot') : [];
   if (!slides.length) return;
 
-  currentIndex = (index + slides.length) % slides.length;
-
-  slides.forEach((slide, i) => slide.classList.toggle('is-active', i === currentIndex));
-  dots.forEach((dot, i) => dot.classList.toggle('is-active', i === currentIndex));
-
+  const target = ((index % slides.length) + slides.length) % slides.length;
   if (restartTimer) startAutoplay();
+
+  // Быстрые нажатия ставим в очередь: текущий переезд завершается без рывка.
+  if (slideAnimations.length && !reduceMotion) {
+    queuedSlide = { index: target, restartTimer, direction };
+    return;
+  }
+  if (target === currentIndex) return;
+
+  const previous = slides[currentIndex];
+  const incoming = slides[target];
+  const moveFocus = previous && previous.contains(document.activeElement);
+  const travel = direction || (target > currentIndex ? 1 : -1);
+  currentIndex = target;
+
+  incoming.inert = false;
+  incoming.tabIndex = 0;
+  incoming.removeAttribute('aria-hidden');
+  incoming.classList.add('is-active');
+  if (moveFocus) incoming.focus({ preventScroll: true });
+
+  slides.forEach((slide, i) => {
+    if (i === target) return;
+    slide.classList.remove('is-active');
+    slide.tabIndex = -1;
+    slide.inert = true;
+    slide.setAttribute('aria-hidden', 'true');
+  });
+  dots.forEach((dot, i) => {
+    dot.classList.toggle('is-active', i === target);
+    if (i === target) dot.setAttribute('aria-current', 'true');
+    else dot.removeAttribute('aria-current');
+  });
+  if (showcaseCounter) showcaseCounter.textContent = String(target + 1).padStart(2, '0') + ' / ' + String(slides.length).padStart(2, '0');
+  if (restartTimer && showcaseStatus) showcaseStatus.textContent = 'Проект ' + (target + 1) + ' из ' + slides.length + '. ' + incoming.getAttribute('aria-label');
+
+  if (!previous || reduceMotion) return;
+
+  // Анимируются только transform и opacity; после завершения остаются CSS-состояния.
+  const options = { duration: SLIDE_DURATION, easing: 'cubic-bezier(0.22, 0.68, 0.18, 1)' };
+  const animations = [
+    previous.animate([
+      { transform: 'translateX(0) scale(1)', opacity: 1 },
+      { transform: `translateX(${-travel * 100}%) scale(0.97)`, opacity: 0.45 }
+    ], options),
+    incoming.animate([
+      { transform: `translateX(${travel * 100}%) scale(1.03)`, opacity: 0.65 },
+      { transform: 'translateX(0) scale(1)', opacity: 1 }
+    ], options)
+  ];
+  slideAnimations = animations;
+  Promise.all(animations.map((animation) => animation.finished)).then(() => {
+    if (slideAnimations !== animations) return;
+    const pending = queuedSlide;
+    cancelSlideTransition();
+    if (pending) setSlide(pending.index, pending.restartTimer, pending.direction);
+  }).catch(() => { /* Отмена ожидаема при смене настройки движения или данных. */ });
 }
 
 function nextSlide() {
-  if (!videos.length) return;
-  setSlide(currentIndex + 1, true);
+  setSlide((queuedSlide ? queuedSlide.index : currentIndex) + 1, true, 1);
 }
 
 function prevSlide() {
-  if (!videos.length) return;
-  setSlide(currentIndex - 1, true);
+  setSlide((queuedSlide ? queuedSlide.index : currentIndex) - 1, true, -1);
 }
 
 function startAutoplay() {
   stopAutoplay();
-  if (reduceMotion || videos.length < 2 || modal.classList.contains('open')) return;
-  autoplayTimer = setInterval(() => setSlide(currentIndex + 1, false), AUTOPLAY_DELAY);
+  const count = showcaseStage ? showcaseStage.children.length : 0;
+  const focused = showcaseEl && showcaseEl.contains(document.activeElement);
+  if (reduceMotion || autoplayPaused || showcaseHovered || showcaseTouched || focused || document.hidden || count < 2 || (modal && modal.classList.contains('open'))) return;
+  autoplayTimer = setTimeout(() => {
+    setSlide(currentIndex + 1, false, 1);
+    startAutoplay();
+  }, AUTOPLAY_DELAY);
 }
 
 function stopAutoplay() {
   if (autoplayTimer) {
-    clearInterval(autoplayTimer);
+    clearTimeout(autoplayTimer);
     autoplayTimer = null;
   }
 }
 
 if (showcaseNext) showcaseNext.addEventListener('click', nextSlide);
 if (showcasePrev) showcasePrev.addEventListener('click', prevSlide);
+if (showcaseToggle) showcaseToggle.addEventListener('click', () => {
+  autoplayPaused = !autoplayPaused;
+  showcaseToggle.setAttribute('aria-pressed', String(autoplayPaused));
+  showcaseToggle.setAttribute('aria-label', autoplayPaused ? 'Включить автопрокрутку' : 'Приостановить автопрокрутку');
+  showcaseToggle.innerHTML = `<i class="fa-solid ${autoplayPaused ? 'fa-play' : 'fa-pause'}" aria-hidden="true"></i>`;
+  startAutoplay();
+});
 
 if (showcaseEl) {
-  showcaseEl.addEventListener('mouseenter', stopAutoplay);
-  showcaseEl.addEventListener('mouseleave', startAutoplay);
+  showcaseEl.addEventListener('mouseenter', () => { showcaseHovered = true; stopAutoplay(); });
+  showcaseEl.addEventListener('mouseleave', () => { showcaseHovered = false; startAutoplay(); });
   showcaseEl.addEventListener('focusin', stopAutoplay);
-  showcaseEl.addEventListener('focusout', startAutoplay);
+  showcaseEl.addEventListener('focusout', () => queueMicrotask(startAutoplay));
 
   let touchStartX = 0;
   let touchStartY = 0;
 
-  showcaseEl.addEventListener('touchstart', (event) => {
-    touchStartX = event.changedTouches[0].screenX;
-    touchStartY = event.changedTouches[0].screenY;
+  showcaseStage.addEventListener('touchstart', (event) => {
+    touchStartX = event.changedTouches[0].clientX;
+    touchStartY = event.changedTouches[0].clientY;
+    showcaseTouched = true;
     stopAutoplay();
   }, { passive: true });
 
-  showcaseEl.addEventListener('touchend', (event) => {
-    const dx = touchStartX - event.changedTouches[0].screenX;
-    const dy = Math.abs(touchStartY - event.changedTouches[0].screenY);
+  showcaseStage.addEventListener('touchend', (event) => {
+    const dx = touchStartX - event.changedTouches[0].clientX;
+    const dy = Math.abs(touchStartY - event.changedTouches[0].clientY);
+    showcaseTouched = false;
     if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > dy) {
+      suppressSlideClickUntil = Date.now() + 500;
       if (dx > 0) nextSlide();
       else prevSlide();
     }
     startAutoplay();
   }, { passive: true });
+  showcaseStage.addEventListener('touchcancel', () => { showcaseTouched = false; startAutoplay(); }, { passive: true });
 }
 
+document.addEventListener('visibilitychange', startAutoplay);
+motionPreference.addEventListener('change', (event) => {
+  reduceMotion = event.matches;
+  const pending = queuedSlide;
+  cancelSlideTransition();
+  if (pending) setSlide(pending.index, false, pending.direction);
+  if (showcaseToggle) showcaseToggle.hidden = reduceMotion;
+  startAutoplay();
+});
+
 /* --- Модалка -------------------------------------------------------------- */
-function openModal(video, index) {
+function openModal(video) {
   if (!modal) return;
 
   stopAutoplay();
   lastFocused = document.activeElement;
-  if (typeof index === 'number') currentIndex = index;
 
   if (modalTitle) modalTitle.textContent = video.title || video.short || '';
-  if (modalDesc) modalDesc.textContent = video.description || '';
+  const { client, role } = getProjectCaption(video);
+  if (modalDesc) modalDesc.textContent = [client, role].filter(Boolean).join(' — ');
   // вертикальное видео открываем в рамке 9:16, горизонтальное — 16:9
   modal.classList.toggle('modal--vertical', isVertical(video));
   if (videoLoader) videoLoader.style.display = 'flex';
@@ -365,10 +519,12 @@ function openModal(video, index) {
   }, 6000);
 
   modal.classList.add('open');
+  modal.inert = false;
   modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
 
   if (modalClose) modalClose.focus();
+  document.querySelectorAll('body > header, body > main, body > footer').forEach((el) => { el.inert = true; });
 }
 
 function closeModal() {
@@ -376,12 +532,14 @@ function closeModal() {
 
   modal.classList.remove('open');
   modal.classList.remove('modal--vertical');
-  modal.setAttribute('aria-hidden', 'true');
   if (modalIframeWrap) modalIframeWrap.innerHTML = '';
   clearTimeout(loaderFallback);
   document.body.style.overflow = '';
+  document.querySelectorAll('body > header, body > main, body > footer').forEach((el) => { el.inert = false; });
 
   if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+  modal.inert = true;
+  modal.setAttribute('aria-hidden', 'true');
   lastFocused = null;
   startAutoplay();
 }
@@ -393,13 +551,33 @@ document.addEventListener('keydown', (event) => {
   const isOpen = modal && modal.classList.contains('open');
 
   if (event.key === 'Escape' && isOpen) {
+    event.preventDefault();
     closeModal();
     return;
   }
-  if (isOpen) return;
+  if (isOpen) {
+    // Не выпускаем Tab из диалога на фон страницы.
+    if (event.key === 'Tab') {
+      const iframe = modalIframeWrap.querySelector('iframe');
+      if (event.shiftKey && document.activeElement === modalClose && iframe) {
+        event.preventDefault();
+        iframe.focus();
+      } else if (!event.shiftKey && document.activeElement === iframe) {
+        event.preventDefault();
+        modalClose.focus();
+      }
+    }
+    return;
+  }
 
-  if (event.key === 'ArrowRight') nextSlide();
-  if (event.key === 'ArrowLeft') prevSlide();
+  // У ленты вертикальных собственная горизонтальная прокрутка.
+  if (event.defaultPrevented || event.target.closest('#shortsScroller, input, textarea, select, [contenteditable="true"]')) return;
+  if (!showcaseEl || showcaseEl.hidden) return;
+  if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+    event.preventDefault();
+    if (event.key === 'ArrowRight') nextSlide();
+    else prevSlide();
+  }
 });
 
 /* --- Медиа ---------------------------------------------------------------- */
@@ -495,6 +673,46 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
+/* --- Тост и копирование почты --------------------------------------------- */
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.add('is-visible');
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(() => toast.classList.remove('is-visible'), 2400);
+}
+
+function copyToClipboard(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(text);
+  }
+  // Запасной путь для http и старых движков: скрытое поле + execCommand
+  return new Promise((resolve, reject) => {
+    const field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.cssText = 'position:fixed;top:-1000px;left:-1000px;opacity:0';
+    document.body.appendChild(field);
+    field.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(field);
+    ok ? resolve() : reject(new Error('copy failed'));
+  });
+}
+
+async function handleEmailCopy(event) {
+  event.preventDefault();
+  try {
+    await copyToClipboard(CONTACTS.email);
+    showToast('Адрес скопирован: ' + CONTACTS.email);
+  } catch (e) {
+    // Копирование недоступно — открываем почтовый клиент, как раньше
+    window.location.href = 'mailto:' + CONTACTS.email;
+  }
+}
+
 /* --- Мелочи --------------------------------------------------------------- */
 function setupContacts() {
   const links = [
@@ -510,6 +728,10 @@ function setupContacts() {
       if (external) el.setAttribute('target', '_blank');
     });
   });
+
+  document.querySelectorAll('#mailBtn, [data-contact="email"]').forEach((el) => {
+    el.addEventListener('click', handleEmailCopy);
+  });
 }
 
 function setupYear() {
@@ -521,8 +743,6 @@ let resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
-    const slides = showcaseStage ? showcaseStage.querySelectorAll('.slide') : [];
-    if (slides.length) setSlide(currentIndex, false);
     updateShortsNav();
   }, 150);
 });

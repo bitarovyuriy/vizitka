@@ -43,20 +43,30 @@
       </div>
 
       <div class="hero__media">
-        <div class="showcase" id="showcase">
+        <div class="showcase" id="showcase" role="region" aria-roledescription="карусель" aria-label="Проекты в фокусе" hidden>
           <div class="showcase__stage" id="showcaseStage"></div>
-          <button class="showcase__arrow showcase__arrow--prev" id="showcasePrev" aria-label="Предыдущий проект"><i class="fa-solid fa-chevron-left"></i></button>
-          <button class="showcase__arrow showcase__arrow--next" id="showcaseNext" aria-label="Следующий проект"><i class="fa-solid fa-chevron-right"></i></button>
-          <div class="showcase__dots" id="showcaseDots"></div>
+          <div class="showcase__controls" id="showcaseControls">
+            <div class="showcase__nav">
+              <button class="showcase__arrow" id="showcasePrev" type="button" aria-label="Предыдущий проект" aria-controls="showcaseStage"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></button>
+              <button class="showcase__arrow" id="showcaseNext" type="button" aria-label="Следующий проект" aria-controls="showcaseStage"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+            </div>
+            <div class="showcase__dots" id="showcaseDots" role="group" aria-label="Выбрать проект"></div>
+            <div class="showcase__tools">
+              <span class="showcase__counter" id="showcaseCounter" aria-hidden="true"></span>
+              <button class="showcase__toggle" id="showcaseToggle" type="button" aria-label="Приостановить автопрокрутку" aria-pressed="false"><i class="fa-solid fa-pause" aria-hidden="true"></i></button>
+            </div>
+          </div>
+          <p class="sr-only" id="showcaseStatus" aria-live="polite" aria-atomic="true"></p>
         </div>
       </div>
     </div>
   </header>
 
-  <section class="section portfolio" id="portfolio">
+  <main>
+  <section class="section portfolio" id="portfolio" aria-labelledby="portfolioTitle">
     <div class="container">
       <div class="section__head">
-        <h2 class="section__title">Проекты</h2>
+        <h2 class="section__title" id="portfolioTitle">Проекты</h2>
         <p class="section__note">Forbes Russia, выпуски Артемия Лебедева, интервью и короткие форматы</p>
       </div>
 
@@ -92,9 +102,6 @@
 
   <section class="section contacts" id="contacts">
     <div class="container">
-      <div class="section__head">
-        <h2 class="section__title">Контакты</h2>
-      </div>
       <div class="contacts__buttons">
         <a class="btn btn--primary btn--wide" id="tgBtn" rel="noopener noreferrer">
           <i class="fa-brands fa-telegram"></i> <span>Написать в Telegram</span>
@@ -105,6 +112,7 @@
       </div>
     </div>
   </section>
+  </main>
 
   <footer class="footer">
     <div class="container footer__inner">
@@ -112,9 +120,9 @@
     </div>
   </footer>
 
-  <div class="modal" id="modal" aria-hidden="true">
+  <div class="modal" id="modal" aria-hidden="true" inert>
     <div class="modal__backdrop" id="modalBackdrop"></div>
-    <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
       <button class="modal__close" id="modalClose" aria-label="Закрыть"><i class="fa-solid fa-xmark"></i></button>
       <div class="modal__video">
         <div class="video-loader" id="videoLoader"><div class="spinner"></div></div>
@@ -124,6 +132,8 @@
       <p class="modal__desc" id="modalDesc"></p>
     </div>
   </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="script.js"></script>
 </body>
